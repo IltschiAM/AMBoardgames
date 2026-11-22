@@ -1,0 +1,35 @@
+# Projekt App Script
+Code_gs.js
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor und IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.log
+
+# Umgebungsvariablen und Zugangsdaten
+.env
+.env.*
+!.env.example
+
+# Abhängigkeiten
+
+# Backups
+*.bak
+*.old
+*~
+
+# Lokale Konfigurationen
+config.local.*
+.git-old/
+.git-backup/

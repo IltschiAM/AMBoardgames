@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Athletic Maniacs’ Board Games</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Rajdhani:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1 id="h1" data-egg="e07" data-ea="lang"></h1><nav id="nav" class="hide"><button class="an" data-tab="spiel" data-i="tabSpiel"></button><button data-tab="radseite" data-i="tabRad"></button><button data-tab="rangseite" data-i="rangT"></button><button data-tab="chat"><span data-i="tabChat"></span><i id="cmark" class="hide"></i></button><button data-tab="hilfe" data-i="tabHilfe"></button><button data-tab="admin" id="anav" class="hide" data-i="tabAdmin"></button></nav><div id="top"><select id="lang" aria-label="Language"><option value="de">DE</option><option value="en">EN</option><option value="fr">FR</option></select><button id="kto" class="hide" data-i="tabEinst"></button><button id="aus" class="hide" data-i="logout"></button></div></header>
+<main>
+<section id="login">
+<p id="eventinfo" class="meld err hide" role="status"></p>
+<div id="loginform">
+<input id="n" data-p="name" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+<input id="p" type="password" data-p="pw" autocomplete="current-password">
+<button id="bin" data-i="login"></button>
+<p id="lfehler" class="meld" role="alert"></p>
+<div class="linkzeile"><button class="link" id="bvergessen" type="button" data-i="vergessen"></button><button class="link" id="bzureg" type="button" data-i="regLink"></button></div>
+<div id="reset" class="hide">
+<p class="klein" data-i="resetHinw"></p>
+<input id="xn" data-p="name" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+<input id="xc" data-p="xcode" autocomplete="off" autocapitalize="characters">
+<input id="xp" type="password" data-p="pwNeu" autocomplete="new-password">
+<input id="xp2" type="password" data-p="pwNeu2" autocomplete="new-password">
+<button id="bxok" data-i="resetBtn"></button>
+<p id="xfehler" class="meld" role="alert"></p>
+</div>
+</div>
+<div id="regform" class="hide">
+<h3 data-i="regT"></h3>
+<p class="klein" data-i="regHinw"></p>
+<input id="rn" data-p="name" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+<input id="rp" type="password" data-p="pw" autocomplete="new-password">
+<button class="link" id="bpwinfo" type="button" data-i="pwInfoL"></button>
+<input id="c" data-p="code" autocapitalize="none" autocorrect="off" spellcheck="false">
+<h3 data-i="teamT"></h3>
+<p class="klein" data-i="teamHinw"></p>
+<select id="t"><option value="rot" data-i="rot"></option><option value="blau" data-i="blau"></option></select>
+<p id="teaminfo" class="klein teaminfo rot"></p>
+<button id="breg" data-i="reg"></button>
+<p id="rfehler" class="meld" role="alert"></p>
+<button class="link" id="bzulogin" type="button" data-i="loginZurueck"></button>
+</div>
+</section>
+<section id="spiel" class="hide">
+<div id="stat"></div>
+<div id="eventende" class="hide"><span data-i="evEnde"></span><button type="button" id="evfinale" data-i="evFinale"></button></div>
+<div id="fb" aria-hidden="true" data-egg="e12" data-ea="lang"></div>
+<div id="kwrap"><div id="kamera"><div id="welt"><div id="brett"></div></div><div id="kfx"></div><div id="kbtn"><button id="ansicht" type="button" class="zweit" data-al="ansicht"></button><button id="klegende" type="button" class="zweit" data-al="kLeg"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button><button id="khist" type="button" class="zweit" data-al="kHist"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg></button><button id="kueb" type="button" class="zweit" data-al="kUeb">⤢</button><button id="kfokus" type="button" class="zweit" data-al="kFokus">◎</button><button id="ktask" type="button" class="zweit" data-al="kTask"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l2 2 3-3M4 17l2 2 3-3M12 8h8M12 18h8"/></svg></button><button id="kset" type="button" class="zweit" data-al="kSet">⚙</button></div></div>
+<div id="legende"></div>
+<div id="hpanel" class="hide"><b data-i="kHist"></b><div id="hliste"></div></div>
+<div id="tpanel" class="hide"><b data-i="tTitel"></b><div id="tliste"></div></div>
+<div id="kpanel" class="hide"><label><span data-i="aTilt"></span><b id="vTilt"></b><input id="sTilt" type="range" min="0" max="60" step="1"></label><label><span data-i="aPersp"></span><b id="vPersp"></b><input id="sPersp" type="range" min="300" max="1200" step="20"></label><label><span data-i="aZoom"></span><b id="vZoom"></b><input id="sZoom" type="range" min="70" max="170" step="5"></label><label><span data-i="aWgr"></span><b id="vWgr"></b><input id="sWgr" type="range" min="60" max="200" step="5"></label><button id="aSaison" type="button" class="zweit hide"></button><button id="aSeite" type="button" class="zweit" data-i="aSeite"></button><button id="aReset" type="button" class="zweit" data-i="aReset"></button></div></div>
+<div id="leiste"><span id="blabel" data-i="roll" data-egg="e06" data-ea="lang"></span><span id="bwrap"><button id="bw" type="button" data-al="roll"><span id="wurf"><span id="cwrap"><span id="cube"></span></span></span><b id="wzahl"></b></button><button id="dtog" type="button" data-al="dcToggle"><span id="dsym"></span><b id="dzahl"></b></button></span></div>
+</section>
+<section id="radseite" class="hide"><div id="radkarte"><div id="radzeiger"></div><div id="radwrap"><svg id="radsvg" viewBox="0 0 400 400" aria-hidden="true"></svg><button id="rbtn" type="button"><b id="rzahl"></b><span data-i="radDrehen"></span></button></div><p id="radtext" data-i="radStart" data-egg="e11" data-ea="lang"></p></div></section>
+<section id="rangseite" class="hide"><div id="rkopfz"><button id="rwahl" type="button"><span><small data-i="rSel" data-egg="e08" data-ea="lang"></small><b id="rwahlt"></b></span><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div id="rzseg"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-i="rZeitr"></span><button type="button" data-z="g" data-i="rZeitG"></button><button type="button" data-z="t" data-i="rZeitT"></button></div></div><p class="klein" id="rsch" data-i="schnitt"></p><div id="teams"></div><div id="rtabs"><button data-f="" class="an" data-i="fAlle"></button><button data-f="rot" data-i="rot"></button><button data-f="blau" data-i="blau"></button></div><div id="rlwrap"><table id="rl"><thead><tr><th>#</th><th data-i="cName"></th><th data-i="cRunden"></th><th data-i="cPunkte"></th></tr></thead><tbody id="rlb"></tbody></table></div><p id="platz"></p><div id="twinfo"></div></section>
+<section id="chat" class="hide"><div id="cverlauf"></div><div id="cedit" class="hide"><span id="ceditt"></span><button type="button" id="cabbr" class="zweit">✕</button></div><div id="cform"><textarea id="ctext" rows="2" data-p="chatPh" autocomplete="off"></textarea><button id="csend" type="button" data-i="chatSenden"></button></div><p class="klein"><span id="czaehl" data-egg="e09" data-ea="lang"></span></p><p id="cfehler" class="meld" role="alert"></p></section>
+<section id="hilfe" class="hide">
+<div id="htabs" role="tablist"><button type="button" class="an" data-ht="spiel" data-i="hTabSpiel"></button><button type="button" data-ht="intro" data-i="hTabIntro"></button><button type="button" data-ht="fb" data-i="hTabFb"></button></div>
+<div id="hspiel"></div>
+<div id="hintro" class="hide"></div>
+<div id="hfb" class="hide">
+<h3 data-i="fbT"></h3>
+<p class="klein" data-i="fbHinw"></p>
+<select id="fbkat" aria-label="Kategorie"><option value="fehler" data-i="fbKatF"></option><option value="idee" data-i="fbKatI"></option><option value="bewertung" data-i="fbKatB"></option><option value="sonstiges" data-i="fbKatS"></option></select>
+<div id="fbstern" class="hide" role="group"></div>
+<input id="fbbetreff" maxlength="100" data-p="fbBetreff" autocomplete="off">
+<textarea id="fbtext" rows="5" data-p="fbPh" autocomplete="off"></textarea>
+<p class="klein"><span id="fbzaehl"></span></p>
+<button id="fbsend" type="button" data-i="fbSenden"></button>
+<p id="fbm" class="meld" role="alert"></p>
+</div>
+</section>
+<section id="einst" class="hide">
+<p class="klein" id="elogin" data-egg="e10" data-ea="lang"></p>
+<h3 data-i="hAnzeige"></h3>
+<p class="klein" data-i="anzeigeHinw"></p>
+<input id="ean" maxlength="20" data-p="anzeige" autocomplete="off">
+<button id="eanb" data-i="speichern"></button>
+<p id="eanm" class="meld" role="alert"></p>
+<h3 data-i="hSpiele"></h3>
+<p class="klein" data-i="spieleHinw"></p>
+<select id="espiele"><option value="0" data-i="spNix"></option><option value="1" data-i="spA"></option><option value="2" data-i="spS"></option><option value="3" data-i="spAS"></option></select>
+<button id="espb" data-i="speichern"></button>
+<p id="espm" class="meld" role="alert"></p>
+<h3 data-i="hPw"></h3>
+<button class="link" id="bpwinfo2" type="button" data-i="pwInfoL"></button>
+<input id="epa" type="password" data-p="pwAlt" autocomplete="current-password">
+<input id="epn" type="password" data-p="pwNeu" autocomplete="new-password">
+<input id="epn2" type="password" data-p="pwNeu2" autocomplete="new-password">
+<button id="epb" data-i="pwAendern"></button>
+<p id="epm" class="meld" role="alert"></p>
+<h3 data-i="hRc"></h3>
+<p class="klein" id="erhint"></p>
+<input id="erp" type="password" data-p="pwAlt" autocomplete="current-password">
+<button id="erb" class="zweit" data-i="rcNeuBtn"></button>
+<p id="erm" class="meld" role="alert"></p>
+</section>
+<section id="admin" class="hide">
+<p id="afehler" class="err" role="alert"></p>
+<div id="alock"><input id="apw" type="password" data-p="apw" autocomplete="off"><button id="aok" data-i="freischalten"></button></div>
+<div id="apanel" class="hide">
+<div id="atabs"><button class="an" data-at="sp" data-i="atSp"></button><button data-at="tw" data-i="atTw"></button><button data-at="ev" data-i="atEv"></button><button data-at="bn" data-i="atBn"></button><button id="aref" type="button" data-al="aRefresh">⟳</button></div>
+<div id="atsp">
+<p class="klein" data-i="aHinw"></p>
+<p class="klein" id="aakt"></p>
+<div id="aselbar"><span data-i="aMark"></span><button type="button" class="zweit" data-sel="rot" data-i="rot"></button><button type="button" class="zweit" data-sel="blau" data-i="blau"></button><button type="button" class="zweit" data-sel="alle" data-i="aAlle"></button><button type="button" class="zweit" data-sel="keine" data-i="aKeine"></button></div>
+<div id="atwrap"><table id="at"><thead><tr><th></th><th data-i="cName"></th><th data-sym="ZW" data-al="aKartW"></th><th data-sym="S" data-al="aKartS"></th><th data-sym="D" data-al="aKartX"></th><th data-sym="R" data-al="aKartD"></th><th data-i="aSpiel" data-al="aSpielT"></th><th data-i="cPunkte"></th><th>⛔</th></tr></thead><tbody id="atb"></tbody></table></div>
+<div id="aform" class="hide"><b id="asel"></b><p id="awarn" class="awarn hide" role="alert"></p><div id="aart" role="group"><button type="button" class="zweit an" data-v="w" data-sym="ZW" data-al="aKartW"></button><button type="button" class="zweit" data-v="s" data-sym="S" data-al="aKartS"></button><button type="button" class="zweit" data-v="x" data-sym="D" data-al="aKartX"></button><button type="button" class="zweit" data-v="d" data-sym="R" data-al="aKartD"></button></div><input id="an" type="number" value="5" step="1"><button id="ag" data-i="aGib"></button><button id="as" class="zweit"></button><button id="arc" class="zweit" data-i="aRc"></button><p id="afm" class="meld" role="alert"></p></div>
+<div id="aecform"><b data-i="aeCode"></b><p class="klein" data-i="aeHinw"></p><div class="aerow"><input id="aecode" maxlength="40" autocomplete="off"><button id="aecs" data-i="speichern"></button></div><p id="aecm" class="meld" role="alert"></p></div>
+</div>
+<div id="atev" class="hide"><div id="evinfo"></div><button id="evneu" class="zweit" data-i="evNeu"></button><p id="evm" class="meld" role="alert"></p></div>
+<div id="atbn" class="hide"><div id="bnform"><b data-i="bnAdmin"></b><p class="klein" data-i="bnHinw"></p>
+<table id="bntab"><thead><tr><th></th><th data-i="bnMail"></th><th data-i="bnDiscord"></th></tr></thead><tbody>
+<tr><td data-i="bnAktiv"></td><td><input type="checkbox" data-bn="mail.aktiv"></td><td><input type="checkbox" data-bn="discord.aktiv"></td></tr>
+<tr><td data-i="fbKatF"></td><td><input type="checkbox" data-bn="mail.fehler"></td><td><input type="checkbox" data-bn="discord.fehler"></td></tr>
+<tr><td data-i="fbKatI"></td><td><input type="checkbox" data-bn="mail.idee"></td><td><input type="checkbox" data-bn="discord.idee"></td></tr>
+<tr><td data-i="fbKatB"></td><td><input type="checkbox" data-bn="mail.bewertung"></td><td><input type="checkbox" data-bn="discord.bewertung"></td></tr>
+<tr><td data-i="fbKatS"></td><td><input type="checkbox" data-bn="mail.sonstiges"></td><td><input type="checkbox" data-bn="discord.sonstiges"></td></tr>
+<tr><td data-i="bnReg"></td><td><input type="checkbox" data-bn="mail.reg"></td><td><input type="checkbox" data-bn="discord.reg"></td></tr>
+<tr><td data-i="bnRc"></td><td><input type="checkbox" data-bn="mail.rc"></td><td><input type="checkbox" data-bn="discord.rc"></td></tr>
+</tbody></table>
+<p class="klein" id="bnst"></p>
+<div class="twb"><button id="bnsave" data-i="twSave"></button><button id="bntest" class="zweit" data-i="bnTest"></button></div>
+<p id="bnm" class="meld" role="alert"></p></div></div>
+<div id="attw" class="hide">
+<div id="twform"><b data-i="twAdmin"></b><p class="klein" id="twst"></p>
+<label><span data-i="twAkt"></span><input id="twakt" type="checkbox"></label>
+<label><span data-i="twEnde"></span><input id="twende" maxlength="5" placeholder="22:00" autocomplete="off"></label>
+<label><span data-i="twPl"></span><input id="twpl" type="number" min="1" max="100"></label>
+<label><span data-i="twPu"></span><input id="twpu" type="number" min="0"></label>
+<label><span data-i="twWu"></span><input id="twwu" type="number" min="0"></label>
+<label><span data-i="twMp"></span><input id="twmp" type="number" min="0"></label>
+<label><span data-i="twTr"></span><select id="twtr"><option>5</option><option>10</option><option>15</option><option>30</option></select></label>
+<div class="twb"><button id="twsave" data-i="twSave"></button><button id="twtrig" class="zweit" data-i="twTrig"></button><button id="twrun" class="zweit" data-i="twRun"></button></div>
+<p id="twm" class="meld" role="alert"></p><p class="klein" data-i="twWarn"></p></div>
+</div>
+</div>
+</section>
+<p id="fehler" role="alert"></p>
+</main>
+<div id="log" role="status" aria-live="polite"></div>
+<div id="quiz" class="overlay hide"><div class="karte">
+<div id="qkopf"><b data-i="quizT"></b><span id="qinfo"></span></div>
+<div id="qbalken"><i></i></div>
+<p id="qfrage"></p>
+<div id="qeingabe"></div>
+<p id="qmeld"></p>
+</div></div>
+<div id="train" class="overlay hide"><div class="karte">
+<div id="tkopf"><b></b><button id="tzu" class="zweit">✕</button></div>
+<p id="tbeschr"></p>
+<div id="tbox"></div>
+<p id="tmeld" class="meld" role="alert"></p>
+</div></div>
+<div id="rov" class="overlay hide"><div class="karte breit"><div id="rkopf"><b data-i="rWaehlen"></b><button id="rzu" class="zweit" type="button">✕</button></div><div id="rgrid"></div></div></div>
+<div id="pwov" class="overlay hide"><div class="karte"><b data-i="pwInfoT"></b><p data-i="pwInfo1"></p><p data-i="pwInfo2"></p><p data-i="pwInfo3"></p><p data-i="pwInfo4"></p><button id="pwzu" class="zweit" type="button" data-i="verstanden"></button></div></div>
+<div id="rcov" class="overlay hide"><div class="karte">
+<b id="rctitel"></b>
+<p id="rctext"></p>
+<div id="rccode"></div>
+<button id="rckop" data-i="kopieren"></button>
+<button id="rczu" class="zweit" data-i="verstanden"></button>
+</div></div>
+<script src="sprachen/de.js?v=1"></script>
+<script src="sprachen/en.js?v=1"></script>
+<script src="sprachen/fr.js?v=1"></script>
+<script src="minispiele.js"></script>
+<script src="spiel.js"></script>
+</body>
+</html>
