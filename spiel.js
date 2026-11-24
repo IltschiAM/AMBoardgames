@@ -1,5 +1,5 @@
 // Hier die Adresse deiner Apps-Script-Web-App eintragen (endet auf /exec)
-const API = 'https://script.google.com/macros/s/AKfycbwxe7yJ3C_nu_gA0XMnonyYQhcMuPgE9yBtwRGs6HBGe2t4lPrXGdtc2tFX5dXrDNz-/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyI7rij4IFxR2gXUgIUXUUK5A02vtnq0AVyWF043x9W_VTuXCqbsPUZDmSuuWPqc4gN/exec';
 
 // Texte der Oberfläche, Hilfe und Einleitung stehen in den Sprachdateien sprachen/de.js, en.js, fr.js (globale Objekte TX, HILFE, INTRO je Sprache); Fallback: Englisch, dann Deutsch
 
@@ -317,6 +317,7 @@ function zeige() {
   document.body.className = S.team;
   $('#login').classList.add('hide');
   $('#eventende').classList.toggle('hide', !S.eventVorbei);   // Event beendet: Hinweis statt Spiel
+  NOCH_ALT = nochNicht(); $('#eventnoch').classList.toggle('hide', !NOCH_ALT || !!S.eventVorbei); if (NOCH_ALT) $('#evnochtxt').textContent = t('evNoch', EV && EV.start ? datumVoll(EV.start) : '…', (EV && EV.startZeit) || '');   // vor dem Startdatum: Hinweis, Würfel, Rad und Übungen gesperrt
   $('#nav').classList.remove('hide'); $('#anav').classList.toggle('hide', !S.admin); tab(TAB);
   $('#aus').classList.remove('hide'); $('#kto').classList.remove('hide');
   $('#elogin').textContent = t('loginName', S.name); $('#erhint').textContent = t(S.rc ? 'rcHatJa' : 'rcHatNein');
@@ -332,12 +333,12 @@ function zeige() {
   if (R) rangZeige();
   if (APN !== S.name.toLowerCase()) apLaden(S.name);
   zahl('dzahl', S.doppel || 0, $('#dzahl')); if (!(S.doppel > 0)) DC_AN = false;   // Doppel-Chance-Schalter am Würfel
-  $('#dtog').classList.toggle('leer', !(S.doppel > 0) || !!S.eventVorbei); $('#dtog').classList.toggle('an', DC_AN);
+  $('#dtog').classList.toggle('leer', !(S.doppel > 0) || !!S.eventVorbei || NOCH_ALT); $('#dtog').classList.toggle('an', DC_AN);
   if (S.doppelwahl) setTimeout(doppelResume, 0);   // offene Auswahl (z. B. nach Neuladen) abschließen
   zahl('wzahl', S.wuerfel, $('#wzahl'));   // zählt hoch/herunter und pulsiert, wenn sich die Würfelzahl ändert
-   $('#bw').classList.toggle('leer', S.wuerfel < 1 || !!S.eventVorbei); $('#leiste').classList.toggle('leer', S.wuerfel < 1 || !!S.eventVorbei);
+   $('#bw').classList.toggle('leer', S.wuerfel < 1 || !!S.eventVorbei || NOCH_ALT); $('#leiste').classList.toggle('leer', S.wuerfel < 1 || !!S.eventVorbei || NOCH_ALT);
   radZeichnen();
-  if (!RAD_BUSY) { zahl('rzahl', S.drehs || 0, $('#rzahl')); $('#rbtn').classList.toggle('leer', !(S.drehs > 0) || !!S.eventVorbei); }
+  if (!RAD_BUSY) { zahl('rzahl', S.drehs || 0, $('#rzahl')); $('#rbtn').classList.toggle('leer', !(S.drehs > 0) || !!S.eventVorbei || NOCH_ALT); }
   if (S.felddrehs && S.felddrehs !== FELDDREHS) { FELDDREHS = S.felddrehs; document.querySelectorAll('.f.R u').forEach(u => u.textContent = '+' + FELDDREHS); }
   uebInfo();
   layoutSpiel(); accZeichnen();
@@ -350,13 +351,13 @@ function zeige() {
 }
 
 function tab(n) {
-  const vorher = TAB; TAB = n; rovZu();
+  const vorher = TAB; TAB = n; document.body.dataset.tab = n; rovZu();
   ['spiel', 'radseite', 'rangseite', 'chat', 'hilfe', 'einst', 'admin'].forEach(id => $('#' + id).classList.toggle('hide', id !== n));
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('an', b.dataset.tab === n));
   $('#kto').classList.toggle('an', n === 'einst');
   if (n === 'spiel') layoutSpiel();
   { const dp = $('#dwov'); if (dp) { dp.classList.toggle('hide', n !== 'spiel'); if (n === 'spiel' && dp._platz) dp._platz(); } }   // Doppel-Chance-Auswahl nur am Spielbrett zeigen; Position erst nach dem Einblenden des Spielbretts berechnen
-  if (n !== vorher) { if (n === 'chat') chatOeffnen(); if (n === 'hilfe') eiMelden('ent_hilfe'); chatMarker(); chatPlan(); }
+  if (n !== vorher) { $('main').scrollTop = 0; window.scrollTo(0, 0); if (n === 'chat') chatOeffnen(); if (n === 'hilfe') eiMelden('ent_hilfe'); chatMarker(); chatPlan(); }
 }
 const HICON = {   // Symbole der Brett-Schaltflächen für die Hilfe (als SVG)
   INFO: ic('<circle cx="12" cy="12" r="9" ' + LN + '/><path ' + LN + ' d="M12 11v6M12 7.5v.5"/>'),
@@ -393,7 +394,7 @@ function trainOeffnen(v) {   // Übung als Overlay: Beschreibung, Start, Ergebni
   if (box._stop) box._stop();
   box.replaceChildren(start);
 }
-function laufText() { const z = EV || {}, d = x => x ? datumVoll(x) : '…'; return t(z.vorbei ? 'laufV' : 'laufX', d(z.start), d(z.ende), z.tage || '…', d(z.bis)); }
+function laufText() { const z = EV || {}, d = x => x ? datumVoll(x) : '…'; return t(z.vorbei ? 'laufV' : 'laufX', d(z.start), d(z.ende), z.tage || '…', d(z.bis), z.startZeit || '…', z.endeZeit || '…'); }
 
 const hzeilen = x => x.split('\n').map(z => '<span class="hl' + (z.startsWith('[[') ? ' sy' : z.startsWith('• ') ? ' li' : '') + '">' + z.replace(/\[\[(\w+)(?:@(\w+))?\]\]/g, (m, c, g) => hico(c, g)) + '</span>').join('');   // jede Zeile (\n im Text) ein eigener Block
 const hblock = ([k, x]) => { const p = el('p', ''); p.innerHTML = hzeilen(x); return [el('h3', k), p]; };
@@ -435,10 +436,10 @@ function willkommenZeigen(wdh) {   // Schnelleinführung als Popup in Schritten.
 }
 function uebInfo() {   // Restanzeige der Übungsspiele: Text in den Knöpfen, z. B. "Punkteschießen (2/3)" (nur für Spieler mit Limit; Admins ohne Zahl)
   const lim = !!(S && S.uebMax > 0 && S.ueb && Object.values(S.ueb).some(x => x >= 0)), e = $('#uebinfo');
-  if (e) e.textContent = lim ? t('uebInfo', S.uebMax) : '';
+  if (e) e.textContent = nochNicht() ? t('uebNoch') : lim ? t('uebInfo', S.uebMax) : '';
   document.querySelectorAll('#hspiel button[data-uv]').forEach(b => {
     const v = b.dataset.uv, r = S && S.ueb && S.ueb[v] !== undefined ? S.ueb[v] : -1;
-    b.textContent = t('vn_' + v) + (r >= 0 ? ' (' + r + '/' + S.uebMax + ')' : ''); b.disabled = r === 0;
+    b.textContent = t('vn_' + v) + (r >= 0 ? ' (' + r + '/' + S.uebMax + ')' : ''); b.disabled = r === 0 || nochNicht();
   });
 }
 function hilfeZeige() {
@@ -446,11 +447,10 @@ function hilfeZeige() {
   const hs = $('#hspiel');
   hs.replaceChildren(...eintraege.flatMap(hblock));
   const h1 = $('#hspiel h3'); if (h1) { h1.dataset.egg = 'e05'; h1.dataset.ea = 'lang'; }
-  const bar = el('div');   // Übungsmodus: öffnet das Minispiel als Overlay
-  bar.append(...['punkte', 'ziel', 'speed', 'huhn', 'sprint', 'zielzeit', 'huerden', 'weit', 'zielweit'].map(v => { const b = el('button', t('vn_' + v), 'zweit'); b.dataset.uv = v; b.onclick = () => trainOeffnen(v); return b; }));
+  const grp = (titel, vs) => { const g = el('div', '', 'mgr'), w = el('div', '', 'mgb'); g.append(el('h4', titel)); w.append(...vs.map(v => { const x = el('button', t('vn_' + v), 'mbtn'); x.type = 'button'; x.dataset.uv = v; x.onclick = () => trainOeffnen(v); return x; })); g.append(w); return g; };   // Übungsmodus: nach Disziplin gruppiert, öffnet das Minispiel als Overlay
   const ui = el('p', '', 'klein'); ui.id = 'uebinfo';
-  hs.append(el('h3', t('trainT')), ui, bar); uebInfo();
-  if (S && S.admin) { const ab = el('button', t('hanoiTestBtn'), 'zweit'); ab.onclick = () => hanoiTest(3); hs.append(ab); }   // nur für Admins
+  hs.append(el('h3', t('trainT')), ui, grp(t('rGrpB'), ['punkte', 'ziel', 'speed', 'huhn']), grp(t('rGrpL'), ['sprint', 'zielzeit', 'huerden']), grp(t('rGrpW'), ['weit', 'zielweit'])); uebInfo();
+  if (S && S.admin) { const g = el('div', '', 'mgr'), w = el('div', '', 'mgb'), ab = el('button', t('hanoiTestBtn'), 'mbtn'); ab.type = 'button'; ab.onclick = () => hanoiTest(3); w.append(ab); g.append(el('h4', t('hSonst')), w); hs.append(g); }   // Sonstige: nur für Admins (Hanoi-Test)
   introZeige();
 }
 let HILFE_ADMIN = false, HILFE_ZUG = null;   // Stand der Hilfe: Admin-Button vorhanden?
@@ -785,11 +785,16 @@ function tsZeigen(liste) {   // Popup nach dem Anmelden: Tagessieg mit Belohnung
   o.id = 'gov'; ico.innerHTML = SYM.TROPHY; ico.querySelector('svg').style.color = 'var(--gold)';
   k.append(ico, el('p', t('twSieg'), 'gtext'));
   liste.forEach(x => k.append(el('p', t('twPlatz', x.pl, datum(x.t), x.tp), 'klein')));
-  k.append(el('p', t('twBel', p, w), 'gtext'), b); o.append(k); document.body.append(o);
-  b.onclick = () => los(async () => {
-    const j = await api({aktion: 'tsok', name: S.name, token: S.token});
-    o.remove(); S = j.spieler; R = j.rang; zeige(); belohnung(p, w);
-  }, '#fehler');
+  const m = el('p', '', 'meld'); m.id = 'tsm'; m.setAttribute('role', 'alert');   // Fehlermeldung direkt im Popup (die Zeile hinter dem Popup ist verdeckt)
+  k.append(el('p', t('twBel', p, w), 'gtext'), m, b); o.append(k); document.body.append(o);
+  b.onclick = () => {
+    if (b.disabled) return;
+    b.disabled = true; b.classList.add('laden');   // sichtbar: Anfrage läuft (Kreisel, pulsierend, gesperrt)
+    return los(async () => {
+      const j = await api({aktion: 'tsok', name: S.name, token: S.token});
+      o.remove(); S = j.spieler; R = j.rang; zeige(); belohnung(p, w);
+    }, '#tsm').finally(() => { if (b.isConnected) { b.disabled = false; b.classList.remove('laden'); } });
+  };
 }
 function rangZeige() {
   const mk = (tag, txt, cls) => { const e = document.createElement(tag); e.textContent = txt; if (cls) e.className = cls; return e; };
@@ -836,7 +841,7 @@ function rangZeige() {
   $('#platz').textContent = ich < 0 ? '' : F ? t('platzTeam', t(F), ich + 1, liste.length) : t(voll ? 'platz' : 'platzSel', ich + 1, liste.length);
 }
 let API_N = 0;   // laufende Spiel-Anfragen: der Chat fragt nur, wenn gerade keine läuft
-async function api(a) { API_N++; try { const j = await apiRoh(a); if (j.bel && j.bel.length) belZeigen(j.bel); return j; } finally { API_N--; } }   // bel = Belohnungen aus Ereignissen
+async function api(a) { API_N++; try { const j = await apiRoh(a); if (j.bel && j.bel.length) belZeigen(j.bel); if (j.event) evSetzen(j.event); return j; } finally { API_N--; } }   // bel = Belohnungen aus Ereignissen
 const istNetz = e => !!e && (e.name === 'AbortError' || e instanceof SyntaxError || /Failed to fetch|Load failed|NetworkError|network connection|Internet connection|offline|timed out/i.test(String(e.message)));   // Verbindungsfehler (Safari meldet "Load failed")
 const DIAG = (() => { try { return JSON.parse(localStorage.getItem('dg')) || []; } catch (e) { return []; } })();
 function diagMerken(a, v, e, ms) {   // Verbindungsfehler für das Fehlerprotokoll merken
@@ -999,6 +1004,7 @@ function radLauf(anfrage) {   // Rad dreht sofort los, bremst nach Eintreffen de
 $('#rbtn').onclick = () => los(async () => {
   if (RAD_BUSY) return;
   if (S.eventVorbei) { wackeln($('#rbtn')); throw new Error('E_EVENTENDE'); }
+  if (nochNicht()) { wackeln($('#rbtn')); throw new Error('E_EVENTNOCH'); }
   if (!(S.drehs > 0)) { wackeln($('#rbtn')); throw new Error('E_NODREH'); }
   RAD_BUSY = true; $('#rbtn').disabled = true; $('#radtext').textContent = '';
   const von = S.drehs;
@@ -1014,15 +1020,31 @@ $('#rbtn').onclick = () => los(async () => {
     throw x;
   } finally { RAD_BUSY = false; $('#rbtn').disabled = false; }
 }, '#log');
-function restText() {   // verbleibende Spielzeit bis Mitternacht nach dem letzten Spieltag
+const jetztMs = () => Date.now() + ((EV && EV.versatz) || 0);   // Serverzeit (versatz gleicht Abweichungen der Geräteuhr aus)
+function nochNicht() { if (S && S.admin) return false; return EV && EV.startMs ? jetztMs() < EV.startMs : !!(S && S.eventNoch); }   // true: das Startdatum ist noch nicht erreicht, es kann noch nicht gespielt werden
+function dauerText(ms) {
+  const m = Math.floor(Math.max(0, ms) / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
+  return d > 0 ? d + ' ' + t('zT') + ' ' + h + ' ' + t('zStd') : h > 0 ? h + ' ' + t('zStd') + ' ' + mi + ' ' + t('zMin') : mi + ' ' + t('zMin');
+}
+function restText() {   // vor dem Start: Zeit bis zum Start; danach verbleibende Spielzeit bis Mitternacht nach dem letzten Spieltag
   if (!EV || !EV.endeMs) return '';
-  const ms = EV.endeMs - (Date.now() + (EV.versatz || 0));   // versatz gleicht Abweichungen der Geräteuhr aus
+  if (nochNicht()) return t('restStart', dauerText(EV.startMs - jetztMs()));
+  const ms = EV.endeMs - jetztMs();
   if (ms <= 0) return t('restEnde');
-  const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
-  return t('restNoch', d > 0 ? d + ' ' + t('zT') + ' ' + h + ' ' + t('zStd') : h > 0 ? h + ' ' + t('zStd') + ' ' + mi + ' ' + t('zMin') : mi + ' ' + t('zMin'));
+  return t('restNoch', dauerText(ms));
 }
 function restZeichnen() { const x = restText(); document.querySelectorAll('#stat .rest').forEach(e => { e.textContent = x; e.parentNode.classList.toggle('hide', !x); }); }
-setInterval(restZeichnen, 30000);
+function evSetzen(e) {   // Event-Status vom Server übernehmen (beim Laden, mit jeder Spielantwort, wenn die Seite wieder sichtbar wird); liefert true, wenn sich etwas geändert hat
+  const k = x => x ? [x.start, x.ende, x.bis, x.tage, x.vorbei, x.gesperrt, x.startMs, x.endeMs].join('|') : '', alt = k(EV);
+  EV = e; EV.versatz = e.jetzt - Date.now();
+  const neu = k(EV) !== alt;
+  if (neu) { eventInfo(); hilfeZeige(); }
+  restZeichnen();
+  return neu;
+}
+function statusLaden() { chatCall({aktion: 'status'}).then(e => { if (evSetzen(e) && S && !API_N) zeige(); }).catch(() => {}); }
+let NOCH_ALT = false;   // Stand von nochNicht() bei der letzten Anzeige: ändert er sich (Startzeitpunkt erreicht), wird die Anzeige neu aufgebaut
+setInterval(() => { restZeichnen(); if (S && nochNicht() !== NOCH_ALT) zeige(); }, 30000);
 function bestaetigen(text, ok, gefahr) {   // eigener Bestätigungsdialog statt confirm(); liefert true (bestätigt) oder false (abgebrochen)
   return new Promise(res => {
     const o = el('div', '', 'overlay'), k = el('div', '', 'karte bdlg'), z = el('div', '', 'bzeile'), a = el('button', t('abbrechen'), 'zweit'), b = el('button', ok, gefahr ? 'gefahr' : '');
@@ -1035,10 +1057,10 @@ function bestaetigen(text, ok, gefahr) {   // eigener Bestätigungsdialog statt 
 }
 // ---- Eventende: Hinweis auf der Anmeldeseite und Finale ----
 const datumVoll = id => { const [y, m, d] = String(id).split('-'); return L === 'de' ? d + '.' + m + '.' + y : L === 'fr' ? d + '/' + m + '/' + y : m + '/' + d + '/' + y; };
-function eventInfo() {   // Anmeldeseite: Hinweis, wenn das Event beendet ist
-  const e = $('#eventinfo'), vorbei = !!(EV && EV.vorbei);
-  e.classList.toggle('hide', !vorbei);
-  e.textContent = !vorbei ? '' : EV.gesperrt ? t('evInfoZu') : t('evInfo', datumVoll(EV.bis));
+function eventInfo() {   // Anmeldeseite: Hinweis, wenn das Event beendet ist oder noch nicht begonnen hat
+  const e = $('#eventinfo'), vorbei = !!(EV && EV.vorbei), noch = !vorbei && !!(EV && EV.startMs && nochNicht());
+  e.classList.toggle('hide', !vorbei && !noch);
+  e.textContent = vorbei ? (EV.gesperrt ? t('evInfoZu') : t('evInfo', datumVoll(EV.bis))) : noch ? t('evInfoNoch', datumVoll(EV.start), EV.startZeit || '') : '';
 }
 function finaleZeigen() {   // Finale: Siegerteam, Top 3 und eigenes Ergebnis
   if (!R || !S) return;
@@ -1058,7 +1080,7 @@ function finaleZeigen() {   // Finale: Siegerteam, Top 3 und eigenes Ergebnis
 const EI_LANG_MS = 900;   // so lange (ms) auf eine Beschriftung drücken, damit ein Easter Egg gemeldet wird (data-ea="lang"); Symbole mit data-ea="klick" reagieren auf Antippen
 const EI_GEFRAGT = new Set(); let EI_TAG = '';   // pro Tag und Sitzung wird jede ID nur einmal gemeldet
 function eiMelden(id, egg) {   // egg = true: Easter-Egg-Versteck (immer melden), sonst Entdecken-Aufgabe   // dem Server melden; er entscheidet, ob es ein Treffer ist (keine Rückmeldung bei Fehlversuchen)
-  if (!S || S.eventVorbei || !S.ev) return;
+  if (!S || S.eventVorbei || !S.ev || nochNicht()) return;
   const heute = new Date().toDateString(); if (EI_TAG !== heute) { EI_GEFRAGT.clear(); EI_TAG = heute; }
   if (EI_GEFRAGT.has(id)) return;
   if (!egg && !S.ev.aufgaben.some(a => a.id === id && !a.ok) && !(S.ev.melden || []).includes(id)) return;   // Entdecken-Aufgaben nur melden, wenn sie heute offen sind (sichtbar) oder der Server versteckte meldet (S.ev.melden, Konfiguration)
@@ -1173,7 +1195,7 @@ $('#csend').onclick = () => {
     else { await chatLaden({aktion: 'chatsenden', text: x, antwort: CH.reply ? CH.reply.id : 0}); chatEditEnde(); }
   }, '#cfehler').finally(() => { b.disabled = false; b.classList.remove('laden'); });
 };
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S) { clearTimeout(CHAT_T); CHAT_T = setTimeout(chatTick, 1500); } });   // Tab wieder sichtbar: bald nachsehen
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { statusLaden(); if (S) { clearTimeout(CHAT_T); CHAT_T = setTimeout(chatTick, 1500); } } });   // Tab wieder sichtbar: Event-Status neu laden und bald im Chat nachsehen   // Tab wieder sichtbar: bald nachsehen
 async function ziehe(von, w, land, ende, txt) {
   let p = von; const weg = [], pk = [], zs = zugWert();   // pk: Punkte, die beim Betreten des jeweiligen Wegfelds angezeigt werden
   for (let i = 0; i < w; i++) { p++; weg.push(p); pk.push(zs); if (p >= 100) break; }
@@ -1186,6 +1208,7 @@ async function ziehe(von, w, land, ende, txt) {
   if (ende !== land) { await sleep(T_SPRUNG); markiere(ende, zp, true); await sleep(T_SCHRITT); }
 }
 function abmelden() {
+  delete document.body.dataset.tab; einstTab('profil');
   HILFE_ADMIN = false; HILFE_ZUG = null; setTimeout(hilfeZeige, 0);   // Admin-Button der Hilfe entfernen
   loginAnsicht('login'); hilfeTab('spiel'); FB_STERN = 0; fbSterneZeichnen(); $('#fbtext').value = ''; $('#fbbetreff').value = ''; $('#fbm').textContent = ''; fbZaehler();   // Feedback-Formular leeren
   adminTab('sp'); AECODE = null; TWA = null; setTimeout(() => $('#n').focus(), 0);   // nach dem Abmelden wieder in den Spielernamen
@@ -1201,7 +1224,7 @@ function abmelden() {
 async function anmelden() {
   const n = $('#n').value.trim();
   const j = await api({aktion: 'login', name: n, hash: await sha(n.toLowerCase() + ':' + $('#p').value)});
-  S = j.spieler; R = j.rang; zeige();
+  S = j.spieler; R = j.rang; zeige(); window.scrollTo(0, 0); $('main').scrollTop = 0;
 }
 
 $('#lang').onchange = e => { L = e.target.value; try { localStorage.setItem('sl', L); } catch (x) {} sprache(); };
@@ -1218,12 +1241,13 @@ $('#bzureg').onclick = () => loginAnsicht('reg');
 $('#bzulogin').onclick = () => loginAnsicht('login');
 $('#breg').onclick = () => los(async () => {
   fehlt(['#rn', '#rp', '#c'], 'E_REGLEER');
+  if ($('#rp').value !== $('#rp2').value) { $('#rp2').focus(); throw new Error('E_PWGLEICH'); }
   const n = $('#rn').value.trim(), pw = $('#rp').value;
   const rj = await api({aktion: 'reg', name: n, hash: await sha(n.toLowerCase() + ':' + pw),
     team: $('#t').value, code: $('#c').value.trim()});
   $('#n').value = n; $('#p').value = pw;
   await anmelden();
-  ['#rn', '#rp', '#c'].forEach(x => { $(x).value = ''; });
+  ['#rn', '#rp', '#rp2', '#c'].forEach(x => { $(x).value = ''; });
   SPIELWAHL = true;   // nach dem Schließen des Wiederherstellungscodes folgt die Auswahl der Spielzugehörigkeit
   codeZeigen(t('rcT'), t('rcTextNeu'), rj.code);
 }, '#rfehler');
@@ -1231,6 +1255,7 @@ function wackeln(b) { b = b || $('#bw'); b.classList.remove('wack'); void b.offs
 let DC_AN = false, DW_BUSY = false;   // DC_AN: Doppel-Chance für den nächsten Wurf aktiviert; DW_BUSY: Wurf bzw. Auswahl läuft gerade
 $('#dtog').onclick = () => los(async () => {
   if (S.eventVorbei) { wackeln($('#dtog')); throw new Error('E_EVENTENDE'); }
+  if (nochNicht()) { wackeln($('#dtog')); throw new Error('E_EVENTNOCH'); }
   if (!(S.doppel > 0)) { wackeln($('#dtog')); throw new Error('E_NODOPPEL'); }
   DC_AN = !DC_AN; $('#dtog').classList.toggle('an', DC_AN);
   if (DC_AN) $('#log').textContent = t('dcAn');
@@ -1303,6 +1328,7 @@ function doppelResume() {   // offene Doppel-Chance-Auswahl (z. B. nach Neuladen
 }
 $('#bw').onclick = () => los(async () => {
   if (S.eventVorbei) { wackeln(); throw new Error('E_EVENTENDE'); }
+  if (nochNicht()) { wackeln(); throw new Error('E_EVENTNOCH'); }
   if (S.doppelwahl) { doppelResume(); return; }
   if (S.aufgabe) { wackeln(); throw new Error('E_AUFGABE'); }
   if (S.wuerfel < 1) { wackeln(); throw new Error('E_NODICE'); }  // ohne Würfel: sofort Hinweis, keine Animation, kein Request
@@ -1448,7 +1474,7 @@ document.addEventListener('keyup', e => {   // Auffangnetz für Bluetooth-Tastat
   const i = f.indexOf(LOGIN_LETZTES), k = i + (e.shiftKey ? -1 : 1);
   if (i >= 0 && k >= 0 && k < f.length) f[k].focus();
 });
-[['#n,#p', '#bin'], ['#rn,#rp,#c,#t', '#breg'], ['#xn,#xc,#xp,#xp2', '#bxok'], ['#apw', '#aok']].forEach(([ids, btn]) => document.querySelectorAll(ids).forEach(e => e.addEventListener('keydown', ev => {   // Eingabetaste löst je nach Formular Anmelden, Registrieren, Zurücksetzen oder Freischalten aus
+[['#n,#p', '#bin'], ['#rn,#rp,#rp2,#c,#t', '#breg'], ['#xn,#xc,#xp,#xp2', '#bxok'], ['#apw', '#aok']].forEach(([ids, btn]) => document.querySelectorAll(ids).forEach(e => e.addEventListener('keydown', ev => {   // Eingabetaste löst je nach Formular Anmelden, Registrieren, Zurücksetzen oder Freischalten aus
   if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); const nx = ev.target.id === 'n' ? ['#n', '#p'] : ev.target.id === 'rn' ? ['#rn', '#rp'] : null; if (nx && $(nx[0]).value.trim() && !$(nx[1]).value) $(nx[1]).focus(); else $(btn).click(); }   // im Namensfeld: erst zum Passwort, wenn es noch leer ist
 })));
 $('#n').focus();   // Startfokus: Spielername
@@ -1480,7 +1506,7 @@ leisteSeite();
 $('#dsym').innerHTML = SYM.D;
 ansichtSetzen();
 sprache();
-chatCall({aktion: 'status'}).then(j => { EV = j; EV.versatz = j.jetzt - Date.now(); eventInfo(); hilfeZeige(); restZeichnen(); }).catch(() => {});   // Anmeldeseite: ist das Event beendet?
+statusLaden();   // Anmeldeseite: ist das Event beendet?
 $('#evfinale').onclick = finaleZeigen;
 $('#ansicht').onclick = () => { ANS = ANS === '3d' ? '2d' : '3d'; try { localStorage.setItem('av', ANS); } catch (e) {} apSpeichern(); ansichtSetzen(); eiMelden('ent_ansicht'); };
 $('#kueb').onclick = () => { CAM.ueb = !CAM.ueb; CAM.px = CAM.py = 0; CAM.ox = null; $('#kueb').classList.toggle('an', CAM.ueb); kamera(CAM.n, 450); };
@@ -1495,6 +1521,7 @@ $('#kfokus').onclick = () => { CAM.ueb = false; CAM.px = CAM.py = 0; CAM.ox = nu
   k.addEventListener('pointermove', e => { if (drag) { CAM.px = drag.px + e.clientX - drag.x; CAM.py = drag.py + e.clientY - drag.y; kamera(CAM.n, 0, true); } });
   ['pointerup', 'pointercancel'].forEach(n => k.addEventListener(n, () => { drag = null; k.classList.remove('drag'); }));
   window.addEventListener('resize', () => { CAM.ox = null; layoutSpiel(); });
+  if (window.ResizeObserver) { let raf = 0; new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { CAM.ox = null; layoutSpiel(); }); }).observe(k); }   // das Brettfenster füllt den freien Platz: Größe ändert sich z. B. durch Hinweisbanner oder Tastatur
 }
 function panelAuf(id) {   // ein Fensterchen am Brett zur Zeit: Einstellungen, Meldungsverlauf, Legende
   const an = $('#' + id).classList.contains('hide');
@@ -1607,3 +1634,30 @@ $('#twerg').onclick = async () => { if (await bestaetigen(t('twErgFrage'), t('tw
   b.disabled = true; b.classList.add('laden');
   return Promise.resolve(h()).finally(() => { b.disabled = false; b.classList.remove('laden'); });
 }; });
+
+// ---- Seite fest halten: nach dem Schließen der Tastatur (iOS verschiebt dabei die Ansicht) wieder nach oben ----
+document.addEventListener('focusout', () => setTimeout(() => window.scrollTo(0, 0), 80));
+// ---- Vollbild (wo der Browser es erlaubt, z. B. iPad und Desktop; auf dem iPhone über "Zum Home-Bildschirm" als App starten) ----
+{
+  const de = document.documentElement, b = $('#vollb'), req = de.requestFullscreen || de.webkitRequestFullscreen, aus = document.exitFullscreen || document.webkitExitFullscreen;
+  const an = () => !!(document.fullscreenElement || document.webkitFullscreenElement), app = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+  if (b && req && !app) {
+    const sym = () => { b.innerHTML = ic('<path ' + LN + ' d="' + (an() ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5') + '"/>'); };
+    b.classList.remove('hide'); sym();
+    b.onclick = () => { try { const p = an() ? aus.call(document) : req.call(de); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(n => document.addEventListener(n, () => { sym(); setTimeout(() => { CAM.ox = null; layoutSpiel(); }, 300); }));
+  }
+}
+
+// ---- Seite exakt an den sichtbaren Bereich binden (iOS verschiebt bei Tastatur, Zoom und Safari-Leisten den sichtbaren Ausschnitt, dann rutschte die Seite unter die Leisten) ----
+if (window.visualViewport) {
+  const vv = window.visualViewport, st = document.body.style; let raf = 0;
+  const pass = () => { raf = 0; st.top = vv.offsetTop + 'px'; st.left = vv.offsetLeft + 'px'; st.right = 'auto'; st.bottom = 'auto'; st.width = vv.width + 'px'; st.height = vv.height + 'px'; };
+  const plan = () => { if (!raf) raf = requestAnimationFrame(pass); };
+  vv.addEventListener('resize', plan); vv.addEventListener('scroll', plan); window.addEventListener('orientationchange', () => setTimeout(plan, 300)); plan();
+}
+window.addEventListener('scroll', () => { if (window.scrollX || window.scrollY) window.scrollTo(0, 0); });   // das Dokument selbst bleibt immer oben
+
+// ---- Konto: zwei Reiter (Profil = Anzeigename und Spielzugehörigkeit, Sicherheit = Passwort und Wiederherstellungscode) ----
+function einstTab(n) { document.querySelectorAll('#etabs button').forEach(b => b.classList.toggle('an', b.dataset.et === n)); ['profil', 'sicher'].forEach(k => $('#e' + k).classList.toggle('hide', k !== n)); }
+$('#etabs').onclick = e => { const b = e.target.closest('button'); if (b) einstTab(b.dataset.et); };

@@ -2,15 +2,15 @@
 *{box-sizing:border-box;touch-action:manipulation}   /* kein Doppeltipp-Zoom auf der ganzen Seite; Spielflächen setzen ihr touch-action selbst */
 html,body{touch-action:manipulation}
 .mcv,.lseite{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-body{margin:0;min-height:100vh;color:var(--text);font:600 17px/1.35 Rajdhani,Barlow,system-ui,sans-serif;background:#05080d}
+body{margin:0;position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none;color:var(--text);font:600 17px/1.35 Rajdhani,Barlow,system-ui,sans-serif;background:#05080d}
 /* Hintergrundbild: zentriert und füllend, damit bei jedem Format vor allem der innere Bereich sichtbar ist; --bg-bild: none schaltet es ab, --bg-dim = Abdunkelung (0 bis 1) */
 body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 90% 40% at 50% -5%,rgba(47,212,184,.14),transparent 70%),linear-gradient(rgba(5,8,13,var(--bg-dim)),rgba(5,8,13,var(--bg-dim))),var(--bg-bild) center center/cover no-repeat}
 h1{font:italic 800 1.45rem 'Barlow Condensed',Impact,sans-serif;margin:0;padding-bottom:6px;letter-spacing:.01em}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;background:linear-gradient(#111c2c,#0b1320);color:var(--hell);padding:8px 12px 0;border-bottom:2px solid var(--neon);box-shadow:0 4px 22px rgba(47,212,184,.22);position:relative;z-index:20}
+header{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;background:linear-gradient(#111c2c,#0b1320);color:var(--hell);padding:8px 12px 0;border-bottom:2px solid var(--neon);box-shadow:0 4px 22px rgba(47,212,184,.22);position:relative;z-index:20}
 #top{display:flex;gap:6px;margin-left:auto;padding-bottom:6px}
 #top select,#top button{width:auto;margin:0;padding:5px 10px;font-size:.9rem;background:rgba(255,255,255,.07);color:var(--hell);border:1px solid var(--line);box-shadow:none}
 #top button.hide,#top select.hide{display:none}
-main{max-width:640px;margin:0 auto;padding:10px 12px 24px}
+main{flex:1 1 0;min-height:0;width:100%;max-width:640px;align-self:center;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px 12px 24px}   /* Kopfzeile bleibt fest, nur main scrollt (und nur bei Seiten, die länger sind als der Bildschirm) */
 input,select,button{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);width:100%;margin:0 0 10px;background:var(--feld);color:var(--text)}
 input::placeholder{color:var(--muted)}
 button{background:linear-gradient(135deg,var(--neon),var(--neon2));color:#04202a;font-weight:700;border-color:transparent;cursor:pointer;box-shadow:0 0 16px rgba(47,212,184,.25)}
@@ -73,7 +73,7 @@ select option{background:#0f1724;color:var(--hell)}
 #fbich{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--tc);border:2px solid #fff;box-shadow:0 0 10px var(--tc);transition:left .4s}
 
 /* Kamera und Brett */
-#kamera{position:relative;height:clamp(300px,calc(100vh - 340px),680px);height:clamp(300px,calc(100dvh - 340px),680px);overflow:hidden;border-radius:18px;border:2px solid var(--line);
+#kamera{position:relative;flex:1 1 0;min-height:0;overflow:hidden;border-radius:18px;border:2px solid var(--line);
   background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(47,212,184,.14),transparent 70%),linear-gradient(rgba(10,17,27,var(--kam-alpha)),rgba(4,7,11,var(--kam-alpha)));   /* Transparenz: --kam-alpha (0 = durchsichtig, 1 = wie vorher) */
   touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;--tilt:0}
 #kamera.drag{cursor:grabbing}
@@ -282,10 +282,11 @@ button.link{display:block;width:auto;background:none;color:var(--neon);border:0;
 /* Tablet im Querformat: Würfel in einem Seitenstreifen, etwa auf Höhe der Brettmitte (etwas tiefer) */
 @media (orientation:landscape) and (min-width:760px) and (min-height:480px){
   main{max-width:min(100%,1040px)}
-  #login,#rangseite,#hilfe,#einst,#admin,#chat{max-width:640px;margin-left:auto;margin-right:auto}
+  #login,#einst,#admin{max-width:640px;margin-left:auto;margin-right:auto}
+  #rangseite,#hilfe,#chat{max-width:920px;margin-left:auto;margin-right:auto}   /* Querformat: Chat, Hilfe und Rangliste breiter */
   #stat{font-size:1rem;gap:0 20px;padding:4px 20px}
   #spiel{padding:0 calc(46px + 142px * var(--wgr,1)) 24px}
-  #kamera{height:clamp(300px,calc(100vh - 210px),760px);height:clamp(300px,calc(100dvh - 210px),760px)}
+  #kamera{flex:1 1 0}
   #leiste{left:auto;right:22px;bottom:28vh;width:calc(152px * var(--wgr,1));flex-direction:column-reverse;justify-content:flex-end;gap:8px;padding:0;background:none}
   #leiste.li{left:22px;right:auto;flex-direction:column-reverse}   /* sonst gewinnt #leiste.li (row-reverse) gegen #leiste und der Text stünde links neben dem Würfel */
   #bw{width:calc(142px * var(--wgr,1));height:calc(142px * var(--wgr,1))}
@@ -310,7 +311,7 @@ button.link{display:block;width:auto;background:none;color:var(--neon);border:0;
 /* Glücksrad */
 #radkarte{position:relative;max-width:480px;margin:6px auto 0;padding:30px 16px 18px;background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(47,212,184,.14),transparent 70%),linear-gradient(rgba(10,17,27,var(--kam-alpha)),rgba(4,7,11,var(--kam-alpha)));border:1.5px solid var(--line);border-radius:22px;box-shadow:0 0 30px rgba(47,212,184,.12);display:flex;flex-direction:column;align-items:center}
 #radzeiger{position:absolute;top:10px;left:50%;margin-left:-14px;z-index:6;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:28px solid var(--gold);filter:drop-shadow(0 0 6px rgba(255,210,63,.6))}
-#radwrap{position:relative;width:min(88vw,380px);aspect-ratio:1;margin:14px 0 10px}
+#radwrap{position:relative;width:min(88vw,380px,max(200px,calc(100dvh - 340px)));aspect-ratio:1;margin:14px 0 10px}
 #radsvg{width:100%;height:100%;display:block;transform:rotate(0deg);will-change:transform}
 #rbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:absolute;top:50%;left:50%;width:27%;height:27%;margin:0;padding:0;transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--neon);background:radial-gradient(circle at 35% 28%,#233650,#0b1320 70%);color:var(--neon);font:italic 800 clamp(.85rem,3.6vw,1.2rem)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.03em;box-shadow:0 0 22px rgba(47,212,184,.4),inset 0 0 14px rgba(47,212,184,.2);z-index:5;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 #rbtn:active{transform:translate(-50%,-50%) scale(.94)}
@@ -393,7 +394,7 @@ button.rit{width:100%;margin:0;padding:9px 12px;text-align:left;font-size:1rem;f
 #nav button{position:relative}
 #cmark{position:absolute;top:4px;right:0;width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold);border:1.5px solid #0b1320}
 #chat:not(.hide){display:flex;flex-direction:column;gap:8px}
-#cverlauf{display:flex;flex-direction:column;gap:2px;overflow-y:auto;height:calc(100vh - 290px);height:calc(100dvh - 290px);min-height:220px;padding:8px;border:1.5px solid var(--line);border-radius:14px;background:rgba(15,23,36,.7);-webkit-overflow-scrolling:touch}
+#cverlauf{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1 1 0;min-height:160px;padding:8px;border:1.5px solid var(--line);border-radius:14px;background:rgba(15,23,36,.7);-webkit-overflow-scrolling:touch}
 .cm{max-width:84%;margin:4px 0;padding:6px 12px 8px;border:1.5px solid var(--line);color:var(--text)}
 .cm small{display:block;margin-bottom:2px;font-size:.78rem;color:var(--muted)}
 .cm small b{color:var(--hell);font-weight:700}
@@ -430,8 +431,8 @@ button.rit{width:100%;margin:0;padding:9px 12px;text-align:left;font-size:1rem;f
 button.gefahr{background:linear-gradient(135deg,#c43a50,#8a1f33);color:var(--hell);box-shadow:none}
 
 /* Eventende: Hinweis auf dem Spielbrett, Finale */
-#eventende{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0 0 10px;padding:10px 14px;background:rgba(255,210,63,.08);border:1.5px solid var(--gold);border-radius:14px;color:var(--hell);font-weight:700}
-#eventende.hide{display:none}
+#eventende,#eventnoch{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0 0 10px;padding:10px 14px;background:rgba(255,210,63,.08);border:1.5px solid var(--gold);border-radius:14px;color:var(--hell);font-weight:700}
+#eventende.hide,#eventnoch.hide{display:none}
 #evfinale{width:auto;margin:0;padding:8px 14px}
 #fin{z-index:62}
 .fin{text-align:center;max-width:420px}
@@ -551,9 +552,9 @@ button.gefahr{background:linear-gradient(135deg,#c43a50,#8a1f33);color:var(--hel
 .cneu::before,.cneu::after{content:'';flex:1;height:2px;border-radius:1px;background:var(--gold);opacity:.7}
 
 /* Hilfe: Reiter (Spielhilfe, Einleitung, Feedback und Support) */
-#htabs{display:flex;gap:6px;margin:6px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-#htabs button{width:auto;flex:none;margin:0;padding:8px 14px;font-size:.95rem;white-space:nowrap;background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--line);box-shadow:none}
-#htabs button.an{background:var(--neon);color:#04202a;border-color:var(--neon)}
+#htabs,#etabs{display:flex;gap:6px;margin:6px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#htabs button,#etabs button{width:auto;flex:none;margin:0;padding:8px 14px;font-size:.95rem;white-space:nowrap;background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--line);box-shadow:none}
+#htabs button.an,#etabs button.an{background:var(--neon);color:#04202a;border-color:var(--neon)}
 #hintro>button{margin-top:14px}
 
 /* Feedback */
@@ -705,3 +706,38 @@ button.gefahr{background:linear-gradient(135deg,#c43a50,#8a1f33);color:var(--hel
 .puff i.w{background:radial-gradient(circle,rgba(255,255,255,.85),rgba(226,239,255,.45) 55%,rgba(226,239,255,0) 72%)}
 @keyframes puffo{0%{opacity:.95;transform:translate(0,0) scale(.35)}55%{opacity:.85}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.05)}}
 #brett[data-saison="weihnachten"][data-fx~="schnee"] .f.ns::before,#brett[data-saison="weihnachten"][data-fx~="schnee"] .f.ns::after{display:none}   /* Felder ohne Schnee (SCHNEE_ANTEIL in spiel.js) */
+
+/* Feste Seite: html und body scrollen nie. Das Spielbrett und der Chat füllen genau den freien Platz unter der Kopfzeile, alles andere scrollt nur innerhalb von main */
+html{height:100%;overflow:hidden;overscroll-behavior:none}
+#spiel:not(.hide){display:flex;flex-direction:column;flex:1 1 0;min-height:0}
+#spiel #kwrap{flex:1 1 0;min-height:240px;display:flex;flex-direction:column}
+#chat:not(.hide){flex:1 1 0;min-height:0;width:100%}   /* width nötig: in der Flex-Spalte würden die automatischen Seitenränder (Tablet) den Chat sonst auf Inhaltsbreite schrumpfen */
+body[data-tab="spiel"] main,body[data-tab="chat"] main,body[data-tab="rangseite"] main{display:flex;flex-direction:column}   /* Brett und Chat füllen den Platz per Flex (kein Prozent-Höhenproblem in Safari) */
+body[data-tab="spiel"] main,body[data-tab="radseite"] main{overflow:hidden}   /* Spielbrett und Glücksrad scrollen nie */
+#vollb svg{width:1.2em;height:1.2em;display:block}
+
+/* Rangliste: die Seite füllt den freien Platz, die Tabelle scrollt selbst, sobald sie nicht mehr hineinpasst (die Seite scrollt nicht mehr, um alle Spieler zu sehen) */
+#rangseite:not(.hide){display:flex;flex-direction:column;flex:1 1 0;min-height:0;width:100%}
+#rangseite>*{flex:none}
+#rangseite #rlwrap{flex:0 1 auto;min-height:120px;max-height:none;overflow-y:auto}
+
+/* Rangliste: weniger Leerraum um die Tabelle, damit sie 2 bis 3 Zeilen mehr zeigt (die Höhe passt sich weiter automatisch an den Bildschirm an, mindestens 120 px) */
+body[data-tab="rangseite"] main{padding-bottom:6px}
+body[data-tab="rangseite"] #fehler:empty{display:none}
+#rangseite #platz{margin:6px 0 0;min-height:1.3em}
+#rangseite #rkopfz{margin:0 0 6px}
+#rangseite #rtabs{margin:8px 0 0}
+#rangseite #rlwrap{margin:8px 0 0}
+/* Konto: zwei Reiter (Profil, Passwort & Wiederherstellung) */
+#ekopf{position:sticky;top:0;z-index:5;margin:0 0 6px;padding:10px 0 8px;background:#070b12}   /* Reiter bleiben als fester Kopf stehen, wenn der Inhalt scrollt */
+
+/* Hilfe: Übungs-Minispiele nach Disziplin gruppiert, kaum transparent */
+.mgr h4{margin:12px 0 5px;font-size:.9rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--neon)}
+.mgb{display:flex;flex-wrap:wrap;gap:6px}
+button.mbtn{width:auto;flex:1 1 calc(50% - 6px);margin:0;padding:10px 12px;background:#1b2a40;color:var(--hell);border:1.5px solid rgba(47,212,184,.6);box-shadow:none}
+button.mbtn:disabled{opacity:.5}
+
+/* Konto: kein Abstand über dem festen Reiterkopf, sonst läuft der Inhalt in dem Streifen darüber durch; der Kopf ist komplett deckend */
+body[data-tab="einst"] main{padding-top:0}
+#ekopf #elogin{margin:0 0 6px}
+#ekopf #etabs{margin:0}

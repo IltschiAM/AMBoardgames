@@ -3,12 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Athletic Maniacs’ Board Games</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Rajdhani:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
-<header><h1 id="h1" data-egg="e07" data-ea="lang"></h1><nav id="nav" class="hide"><button class="an" data-tab="spiel" data-i="tabSpiel"></button><button data-tab="radseite" data-i="tabRad"></button><button data-tab="rangseite" data-i="rangT"></button><button data-tab="chat"><span data-i="tabChat"></span><i id="cmark" class="hide"></i></button><button data-tab="hilfe" data-i="tabHilfe"></button><button data-tab="admin" id="anav" class="hide" data-i="tabAdmin"></button></nav><div id="top"><select id="lang" aria-label="Language"><option value="de">DE</option><option value="en">EN</option><option value="fr">FR</option></select><button id="kto" class="hide" data-i="tabEinst"></button><button id="aus" class="hide" data-i="logout"></button></div></header>
+<header><h1 id="h1" data-egg="e07" data-ea="lang"></h1><nav id="nav" class="hide"><button class="an" data-tab="spiel" data-i="tabSpiel"></button><button data-tab="radseite" data-i="tabRad"></button><button data-tab="rangseite" data-i="rangT"></button><button data-tab="chat"><span data-i="tabChat"></span><i id="cmark" class="hide"></i></button><button data-tab="hilfe" data-i="tabHilfe"></button><button data-tab="admin" id="anav" class="hide" data-i="tabAdmin"></button></nav><div id="top"><select id="lang" aria-label="Language"><option value="de">DE</option><option value="en">EN</option><option value="fr">FR</option></select><button id="vollb" type="button" class="hide" data-al="vollbild"></button><button id="kto" class="hide" data-i="tabEinst"></button><button id="aus" class="hide" data-i="logout"></button></div></header>
 <main>
 <section id="login">
 <p id="eventinfo" class="meld err hide" role="status"></p>
@@ -33,6 +36,7 @@
 <p class="klein" data-i="regHinw"></p>
 <input id="rn" data-p="name" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
 <input id="rp" type="password" data-p="pw" autocomplete="new-password">
+<input id="rp2" type="password" data-p="pwWdh" autocomplete="new-password">
 <button class="link" id="bpwinfo" type="button" data-i="pwInfoL"></button>
 <input id="c" data-p="code" autocapitalize="none" autocorrect="off" spellcheck="false">
 <h3 data-i="teamT"></h3>
@@ -47,6 +51,7 @@
 <section id="spiel" class="hide">
 <div id="stat"></div>
 <div id="eventende" class="hide"><span data-i="evEnde"></span><button type="button" id="evfinale" data-i="evFinale"></button></div>
+<div id="eventnoch" class="hide"><span id="evnochtxt"></span></div>
 <div id="fb" aria-hidden="true" data-egg="e12" data-ea="lang"></div>
 <div id="kwrap"><div id="kamera"><div id="welt"><div id="brett"></div></div><div id="kfx"></div><div id="kbtn"><button id="ansicht" type="button" class="zweit" data-al="ansicht"></button><button id="klegende" type="button" class="zweit" data-al="kLeg"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button><button id="khist" type="button" class="zweit" data-al="kHist"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg></button><button id="kueb" type="button" class="zweit" data-al="kUeb">⤢</button><button id="kfokus" type="button" class="zweit" data-al="kFokus">◎</button><button id="ktask" type="button" class="zweit" data-al="kTask"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l2 2 3-3M4 17l2 2 3-3M12 8h8M12 18h8"/></svg></button><button id="kset" type="button" class="zweit" data-al="kSet">⚙</button></div></div>
 <div id="legende"></div>
@@ -75,7 +80,11 @@
 </div>
 </section>
 <section id="einst" class="hide">
+<div id="ekopf">
 <p class="klein" id="elogin" data-egg="e10" data-ea="lang"></p>
+<div id="etabs" role="tablist"><button type="button" class="an" data-et="profil" data-i="etProfil"></button><button type="button" data-et="sicher" data-i="etSicher"></button></div>
+</div>
+<div id="eprofil">
 <h3 data-i="hAnzeige"></h3>
 <p class="klein" data-i="anzeigeHinw"></p>
 <input id="ean" maxlength="20" data-p="anzeige" autocomplete="off">
@@ -86,6 +95,8 @@
 <select id="espiele"><option value="0" data-i="spNix"></option><option value="1" data-i="spA"></option><option value="2" data-i="spS"></option><option value="3" data-i="spAS"></option></select>
 <button id="espb" data-i="speichern"></button>
 <p id="espm" class="meld" role="alert"></p>
+</div>
+<div id="esicher" class="hide">
 <h3 data-i="hPw"></h3>
 <button class="link" id="bpwinfo2" type="button" data-i="pwInfoL"></button>
 <input id="epa" type="password" data-p="pwAlt" autocomplete="current-password">
@@ -98,6 +109,7 @@
 <input id="erp" type="password" data-p="pwAlt" autocomplete="current-password">
 <button id="erb" class="zweit" data-i="rcNeuBtn"></button>
 <p id="erm" class="meld" role="alert"></p>
+</div>
 </section>
 <section id="admin" class="hide">
 <p id="afehler" class="err" role="alert"></p>
@@ -165,10 +177,10 @@
 <button id="rckop" data-i="kopieren"></button>
 <button id="rczu" class="zweit" data-i="verstanden"></button>
 </div></div>
-<script src="sprachen/de.js?v=1"></script>
-<script src="sprachen/en.js?v=1"></script>
-<script src="sprachen/fr.js?v=1"></script>
-<script src="minispiele.js"></script>
-<script src="spiel.js"></script>
+<script src="sprachen/de.js?v=6"></script>
+<script src="sprachen/en.js?v=6"></script>
+<script src="sprachen/fr.js?v=6"></script>
+<script src="minispiele.js?v=6"></script>
+<script src="spiel.js?v=6"></script>
 </body>
 </html>

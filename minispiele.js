@@ -198,6 +198,43 @@ const MINIP = {punkte: {pfeile: 5, min: 15, ref: 48, pfeilSek: 15}, ziel: {pfeil
   sprint: {best: 9.8, max: 20}, zielzeit: {ziel: 13, tol: 4}, huerden: {best: 10.5, max: 22, quer: 1.5},
   weit: {min: 3, ref: 8}, zielweit: {ziel: 6.2, tol: 1.5}};   // nur fürs Üben, 100m-Werte wie MINI.lauf in Code.gs
 
+// ---- Tastatursteuerung der Minispiele (PC und iPad mit Tastatur, zusätzlich zu Maus und Touch) ----
+// Tippen, Laufen, Schießen, Absprung: Leertaste, Enter, Ziffernblock-Enter oder Pfeil hoch. Ausweichen beim Hindernislauf: Pfeil links/rechts, linke/rechte Umschalttaste oder H/K.
+const KEY_LENK = 2;   // Hindernislauf: so schnell (Querposition-Einheiten pro Sekunde) wandert der Regler, solange eine Lenktaste gehalten wird
+const TASTEN_VAR = ['punkte', 'ziel', 'speed', 'sprint', 'zielzeit', 'huerden', 'weit', 'zielweit'];   // Varianten mit Tastatursteuerung (die Zielscheiben-Jagd braucht eine Zielposition und bleibt bei Maus/Touch)
+function tasteArt(e) {   // 'tipp', 'li', 're' oder '' (e.code bevorzugt, e.key als Rückfall für Tastaturen ohne code)
+  const c = e.code || '', k = e.key || '';
+  if (c === 'Space' || c === 'Enter' || c === 'NumpadEnter' || c === 'ArrowUp' || k === ' ' || k === 'Enter' || k === 'ArrowUp') return 'tipp';
+  if (c === 'ArrowLeft' || c === 'KeyH' || c === 'ShiftLeft' || k === 'ArrowLeft' || k === 'h' || k === 'H' || (k === 'Shift' && e.location === 1)) return 'li';
+  if (c === 'ArrowRight' || c === 'KeyK' || c === 'ShiftRight' || k === 'ArrowRight' || k === 'k' || k === 'K' || (k === 'Shift' && e.location === 2)) return 're';
+  return '';
+}
+function tastenBindung(aktiv, tipp, los, lenk) {   // aktiv() = Spiel läuft noch; tipp() = Taste gedrückt (ohne Wiederholung); los() = losgelassen (nur Weitsprung, sonst null); lenk(-1|0|1) = Lenkrichtung (nur Hindernislauf, sonst null)
+  const ge = {li: new Set(), re: new Set()}, idv = e => e.code || String(e.key).toLowerCase();
+  let tippt = false;
+  const dir = () => (ge.re.size ? 1 : 0) - (ge.li.size ? 1 : 0);
+  const ab = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('keyup', ku, true); window.removeEventListener('blur', zu); };
+  const zu = () => { ge.li.clear(); ge.re.clear(); if (tippt) { tippt = false; if (los) los(); } if (lenk) lenk(0); };   // Fenster verliert den Fokus: alles loslassen
+  function kd(e) {
+    if (!aktiv()) return ab();
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const a = tasteArt(e);
+    if (!a || (a !== 'tipp' && !lenk)) return;
+    e.preventDefault();
+    if (a === 'tipp') { if (!e.repeat && !(los && tippt)) { tippt = true; tipp(); } }
+    else { ge[a].add(idv(e)); lenk(dir()); }
+  }
+  function ku(e) {
+    if (!aktiv()) return ab();
+    const a = tasteArt(e);
+    if (!a) return;
+    if (a === 'tipp') { if (los && tippt) { tippt = false; los(); } }
+    else if (lenk) { ge[a].delete(idv(e)); lenk(dir()); }
+  }
+  document.addEventListener('keydown', kd, true); document.addEventListener('keyup', ku, true); window.addEventListener('blur', zu);
+  return ab;
+}
+
 function miniSpiel(box, v, seed, P, onEnde) {   // zeichnet und spielt eine Bogenschieß-Variante, Punkte und Zeit stehen auf der Fläche
   const kt = box.closest('.karte'); if (kt) kt.classList.toggle('breit', LAUF.includes(v) || WEIT.includes(v));
   if (LAUF.includes(v)) return laufSpiel(box, v, seed, P, onEnde);
@@ -394,6 +431,7 @@ function miniSpiel(box, v, seed, P, onEnde) {   // zeichnet und spielt eine Boge
     } else if (ich) { schuesse.push({t: t, f: t, p: pfad(t)}); letzter = t; if (taps.length + verfall >= P.pfeile) schluss = t; }
     else { treffer.push(pfad(t)); if (taps.length + verfall >= P.pfeile) beenden(); }
   };
+  if (!huhn) tastenBindung(() => !ende, () => { const r = cv.getBoundingClientRect(); cv.onpointerdown({preventDefault() {}, clientX: r.left + cv.clientLeft + cv.clientWidth / 2, clientY: r.top + cv.clientTop + cv.clientHeight * (HUDH + W / 2) / H}); }, null, null);   // Taste = Schuss (nur der Zeitpunkt zählt, die Position ist egal)
   frame();
 }
 
@@ -405,7 +443,8 @@ function zoomSperre(e) {   // Spielflächen: kein Doppeltipp-Zoom, kein Pinch-Zo
 }
 function fz(x) { return String(x).replace('.', typeof L !== 'undefined' && (L === 'de' || L === 'fr') ? ',' : '.'); }
 function rohText(v, roh) { return fz(roh) + (typeof roh === 'number' ? (LAUF.includes(v) ? ' s' : WEIT.includes(v) ? ' m' : '') : ''); }
-function miniBeschr(v, P) { return t('mDesc_' + v + (v === 'zielweit' && (P.wertung === 'schnitt' || P.wertung === 'bonus') ? '_' + P.wertung : ''), v === 'zielweit' ? fz(P.ziel.toFixed(2)) : fz(P.ziel || P.sek || ''), P.pfeile, P.pfeilSek, P.verfallPunkte === undefined ? 10 : P.verfallPunkte); }
+function miniBeschr(v, P) { return miniBeschrRoh(v, P) + (TASTEN_VAR.includes(v) ? ' ' + t('mTaste') + (v === 'huerden' ? ' ' + t('mTasteH') : '') : ''); }
+function miniBeschrRoh(v, P) { return t('mDesc_' + v + (v === 'zielweit' && (P.wertung === 'schnitt' || P.wertung === 'bonus') ? '_' + P.wertung : ''), v === 'zielweit' ? fz(P.ziel.toFixed(2)) : fz(P.ziel || P.sek || ''), P.pfeile, P.pfeilSek, P.verfallPunkte === undefined ? 10 : P.verfallPunkte); }
 function laufSpiel(box, v, seed, P, onEnde) {
   if (box._stop) box._stop();
   const W = 360, HUDH = 38, SH = 262, H = HUDH + SH, dpr = Math.min(3, window.devicePixelRatio || 1), cv = document.createElement('canvas');
@@ -548,6 +587,7 @@ function laufSpiel(box, v, seed, P, onEnde) {
   function frame() {
     if (ende) return;
     const now = performance.now(), ms = now - tS - START, dt = Math.min(0.1, (now - prev) / 1000); prev = now;
+    if (kdir && !fin) tx = Math.max(-1, Math.min(1, tx + kdir * KEY_LENK * dt));   // Lenktasten bewegen den Regler
     if (ms >= 0 && !gesperrt) {   // ab "Los!": Seitenwechsel sperren und Knopf unsichtbar und berührungslos machen, damit er keine Touch-Eingaben des Reglers schluckt
       gesperrt = true;
       if (swapBtn) { swapBtn.style.visibility = 'hidden'; swapBtn.style.pointerEvents = 'none'; }
@@ -588,6 +628,8 @@ function laufSpiel(box, v, seed, P, onEnde) {
     p.onpointermove = e => { if (hu && e.pointerId === lenkId) tx = rg(e); };
     p.onpointerup = p.onpointercancel = e => { if (e.pointerId === lenkId) lenkId = -1; };
   });
+  let kdir = 0;   // Lenkrichtung per Tastatur (Hindernislauf)
+  tastenBindung(() => !ende, () => tipp(lauftaste(), {preventDefault() {}}), null, hu ? d => { kdir = d; } : null);
   frame();
 }
 
@@ -817,5 +859,14 @@ function weitSpiel(box, v, seed, P, onEnde) {
       downId = -1; ev.push([Math.round(performance.now() - tS), 2, 0]);   // Loslassen legt den Winkel fest
     };
   });
+  let kTaste = false;   // Taste gedrückt (wie Finger runter)
+  const kDown = () => {
+    if (ende || downId !== -1 || kTaste) return;
+    const ms = performance.now() - tS, tm = Math.round(ms);
+    if (!CUR || ms < CUR.t0 || CUR.ph > 1 || tm - lastD < 100) return;
+    lastD = tm; kTaste = true; ev.push([tm, 1, 0]); lauftaste().classList.add('druck');
+  };
+  const kUp = () => { if (!kTaste) return; kTaste = false; lauftaste().classList.remove('druck'); ev.push([Math.round(performance.now() - tS), 2, 0]); };   // Loslassen legt den Winkel fest
+  tastenBindung(() => !ende, kDown, kUp, null);
   frame();
 }
