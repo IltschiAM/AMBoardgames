@@ -200,7 +200,7 @@ const MINIP = {punkte: {pfeile: 5, min: 15, ref: 48, pfeilSek: 15}, ziel: {pfeil
 
 // ---- Tastatursteuerung der Minispiele (PC und iPad mit Tastatur, zusätzlich zu Maus und Touch) ----
 // Tippen, Laufen, Schießen, Absprung: Leertaste, Enter, Ziffernblock-Enter oder Pfeil hoch. Ausweichen beim Hindernislauf: Pfeil links/rechts, linke/rechte Umschalttaste oder H/K.
-const KEY_LENK = 2;   // Hindernislauf: so schnell (Querposition-Einheiten pro Sekunde) wandert der Regler, solange eine Lenktaste gehalten wird
+const KEY_LENK_MIN = 0.5, KEY_LENK = 1.6, KEY_LENK_ANLAUF = 0.5;   // Hindernislauf: Tempo des Reglers (Querposition-Einheiten pro Sekunde) bei gehaltener Lenktaste: beginnt bei KEY_LENK_MIN (ein kurzer Tastendruck bewegt nur wenig) und steigt innerhalb von KEY_LENK_ANLAUF Sekunden auf KEY_LENK
 const TASTEN_VAR = ['punkte', 'ziel', 'speed', 'sprint', 'zielzeit', 'huerden', 'weit', 'zielweit'];   // Varianten mit Tastatursteuerung (die Zielscheiben-Jagd braucht eine Zielposition und bleibt bei Maus/Touch)
 function tasteArt(e) {   // 'tipp', 'li', 're' oder '' (e.code bevorzugt, e.key als Rückfall für Tastaturen ohne code)
   const c = e.code || '', k = e.key || '';
@@ -587,7 +587,7 @@ function laufSpiel(box, v, seed, P, onEnde) {
   function frame() {
     if (ende) return;
     const now = performance.now(), ms = now - tS - START, dt = Math.min(0.1, (now - prev) / 1000); prev = now;
-    if (kdir && !fin) tx = Math.max(-1, Math.min(1, tx + kdir * KEY_LENK * dt));   // Lenktasten bewegen den Regler
+    if (kdir && !fin) { kHalt += dt; tx = Math.max(-1, Math.min(1, tx + kdir * (KEY_LENK_MIN + (KEY_LENK - KEY_LENK_MIN) * Math.min(1, kHalt / KEY_LENK_ANLAUF)) * dt)); }   // Lenktasten bewegen den Regler, anfangs langsam
     if (ms >= 0 && !gesperrt) {   // ab "Los!": Seitenwechsel sperren und Knopf unsichtbar und berührungslos machen, damit er keine Touch-Eingaben des Reglers schluckt
       gesperrt = true;
       if (swapBtn) { swapBtn.style.visibility = 'hidden'; swapBtn.style.pointerEvents = 'none'; }
@@ -628,8 +628,8 @@ function laufSpiel(box, v, seed, P, onEnde) {
     p.onpointermove = e => { if (hu && e.pointerId === lenkId) tx = rg(e); };
     p.onpointerup = p.onpointercancel = e => { if (e.pointerId === lenkId) lenkId = -1; };
   });
-  let kdir = 0;   // Lenkrichtung per Tastatur (Hindernislauf)
-  tastenBindung(() => !ende, () => tipp(lauftaste(), {preventDefault() {}}), null, hu ? d => { kdir = d; } : null);
+  let kdir = 0, kHalt = 0;   // Lenkrichtung per Tastatur (Hindernislauf) und wie lange sie schon gehalten wird
+  tastenBindung(() => !ende, () => tipp(lauftaste(), {preventDefault() {}}), null, hu ? d => { if (d !== kdir) kHalt = 0; kdir = d; } : null);
   frame();
 }
 

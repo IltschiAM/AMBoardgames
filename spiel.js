@@ -1,5 +1,5 @@
 // Hier die Adresse deiner Apps-Script-Web-App eintragen (endet auf /exec)
-const API = 'https://script.google.com/macros/s/AKfycbyI7rij4IFxR2gXUgIUXUUK5A02vtnq0AVyWF043x9W_VTuXCqbsPUZDmSuuWPqc4gN/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwHaIG6eXPMEAMhzQAspoV4xj4F7A3nkJpou_U2633vp5ueiXcO_hFYBVBXiYhkFaSo/exec';
 
 // Texte der Oberfläche, Hilfe und Einleitung stehen in den Sprachdateien sprachen/de.js, en.js, fr.js (globale Objekte TX, HILFE, INTRO je Sprache); Fallback: Englisch, dann Deutsch
 
@@ -348,14 +348,20 @@ function zeige() {
   if (S.willkommen && !S.eventVorbei && !$('#wov')) willkommenZeigen();   // neu registriert: Willkommensmeldung mit Schnelleinführung (liegt über dem Geschenk-Popup)
   if (g > 0 || d > 0) { S.wuerfel = echt; S.drehs = echtD; geschenkZeigen(g, d); }
   else if ((S.tagessieg || []).length && !$('#gov') && !S.eventVorbei) tsZeigen(S.tagessieg);   // Tagessieg: erst nach dem Geschenk-Popup
+  else if ((S.teamziel || []).length && !$('#gov') && !S.eventVorbei) tzZeigen(S.teamziel);   // Team-Tagesziel erreicht: nach dem Tagessieg-Popup
 }
 
 function tab(n) {
   const vorher = TAB; TAB = n; document.body.dataset.tab = n; rovZu();
-  ['spiel', 'radseite', 'rangseite', 'chat', 'hilfe', 'einst', 'admin'].forEach(id => $('#' + id).classList.toggle('hide', id !== n));
+  const sec = n === 'twseite' ? 'rangseite' : n;   // die Seite Tageswertung nutzt dieselbe Seitenstruktur wie die Rangliste, mit festem Modus
+  if (n !== 'twseite' && F === 'l') F = '';
+  if (n === 'twseite') { if (ART !== 'tw') ARTV = ART; ART = 'tw'; } else if (n === 'rangseite' && ART === 'tw') ART = ARTV || 'alle';
+  $('#rangseite').classList.toggle('twmodus', n === 'twseite');
+  ['spiel', 'radseite', 'rangseite', 'chat', 'hilfe', 'einst', 'admin'].forEach(id => $('#' + id).classList.toggle('hide', id !== sec));
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('an', b.dataset.tab === n));
   $('#kto').classList.toggle('an', n === 'einst');
   if (n === 'spiel') layoutSpiel();
+  if ((n === 'rangseite' || n === 'twseite') && R) rangZeige();
   { const dp = $('#dwov'); if (dp) { dp.classList.toggle('hide', n !== 'spiel'); if (n === 'spiel' && dp._platz) dp._platz(); } }   // Doppel-Chance-Auswahl nur am Spielbrett zeigen; Position erst nach dem Einblenden des Spielbretts berechnen
   if (n !== vorher) { $('main').scrollTop = 0; window.scrollTo(0, 0); if (n === 'chat') chatOeffnen(); if (n === 'hilfe') eiMelden('ent_hilfe'); chatMarker(); chatPlan(); }
 }
@@ -746,7 +752,7 @@ const rekV = () => ART.startsWith('pr_') ? ART.slice(3) : '';
 const rekName = v => varName(v) + ' (' + t(REKORD[v] < 0 ? 'rkZ' : v === 'weit' ? 'rkW' : 'rkP') + ')';
 const METR = ['quiz', 'mini'].concat(VARS);   // Reihenfolge wie METR in Code.gs
 const varName = v => (['punkte', 'ziel', 'speed', 'huhn'].includes(v) ? t('B') + ': ' : '') + t('vn_' + v);
-let Z = 'g', ART = 'alle';   // Rangliste: Zeitraum (g = gesamt, t = heute) und Wertung (alle, quiz, mini oder eine Minispiel-Variante)
+let Z = 'g', ART = 'alle', ARTV = '';   // Rangliste: Zeitraum (g = gesamt, t = heute) und Wertung (alle, quiz, mini oder eine Minispiel-Variante)
 const artName = a => a.startsWith('pr_') ? rekName(a.slice(3)) : ({alle: 'rAlle', quiz: 'rQuiz', mini: 'rMini', tw: 'rTw'}[a] ? t({alle: 'rAlle', quiz: 'rQuiz', mini: 'rMini', tw: 'rTw'}[a]) : varName(a));
 function rangTitel() { $('#rwahlt').textContent = artName(ART); }
 function rovZu() { $('#rov').classList.add('hide'); document.body.classList.remove('ovl'); }
@@ -756,7 +762,7 @@ function rangOptionen() {   // Ranglisten-Menü als Raster: Gruppen und Wertunge
   const grp = (ico, titel, items, cls) => { const g = el('section', '', 'rgr' + (cls ? ' ' + cls : '')), h = el('h4', ''), w = el('div', '', 'rwb'); h.innerHTML = '<span class="rgi">' + (SYM[ico] || '') + '</span>'; h.append(titel); w.append(...items); g.append(h, w); return g; };
   const vb = v => btn(v, t('vn_' + v));
   $('#rgrid').replaceChildren(
-    grp('TROPHY', t('rGrpA'), [btn('alle', t('rAlle')), btn('quiz', t('rQuiz')), btn('mini', t('rMini')), btn('tw', t('rTw'))]),
+    grp('TROPHY', t('rGrpA'), [btn('alle', t('rAlle')), btn('quiz', t('rQuiz')), btn('mini', t('rMini'))]),
     grp('B', t('rGrpB'), ['punkte', 'ziel', 'speed', 'huhn'].map(vb)),
     (() => { const c = el('div', '', 'rsp'); c.append(grp('L', t('rGrpL'), ['sprint', 'zielzeit', 'huerden'].map(vb)), grp('W', t('rGrpW'), ['weit', 'zielweit'].map(vb))); return c; })(),   // Leichtathletik: zwei Zellen übereinander in einer Spalte
     grp('ZP', t('rGrpR'), [['punkte', 'speed', 'huhn'], ['sprint', 'huerden', 'weit']].map(zeile => { const d = el('div', '', 'rrow'); d.append(...zeile.map(v => btn('pr_' + v, rekName(v)))); return d; }), 'rrek'));   // zwei Zeilen: Bogen / Lauf und Weitsprung
@@ -768,15 +774,30 @@ function wert(x) {   // Wert eines Spielers in der gewählten Rangliste
   return ((Z === 't' ? x.d : x.s) || [])[METR.indexOf(ART)] || 0;
 }
 const datum = id => { const [y, m, d] = String(id).split('-'); return L === 'de' ? d + '.' + m + '.' : L === 'fr' ? d + '/' + m : m + '/' + d; };
-function twZeigen() {   // Hinweis zur Tageswertung und die Sieger der letzten Auswertung
+function twZeigen() {   // Hinweis zur laufenden Tageswertung (unter der Tabelle)
   const e = $('#twinfo'); e.replaceChildren();
   if (ART !== 'tw' || !R || !R.tw) return;
-  const T = R.tw, l = T.letzte;
-  e.append(el('p', t('twHinweis', T.ende, T.plaetze, T.punkte, T.wuerfel), 'klein'), el('h3', t('twLetzte', l ? datum(l.tag) : '-')));
-  if (!l || !l.sieger.length) { e.append(el('p', t('twKeine'), 'klein')); return; }
-  const ich = S ? (S.anzeige || S.name) : '';
-  l.sieger.forEach(x => { const d = el('div', '', 'hz'); d.append(el('time', x.pl + '.'), el('span', x.n + ' (' + x.tp + ')')); if (x.n === ich) d.style.fontWeight = '800'; e.append(d); });
-  e.append(el('p', t('twBel', l.p, l.w), 'klein'));
+  const T = R.tw;
+  e.append(el('p', t('twHinweis', T.ende, T.plaetze, T.punkte, T.wuerfel), 'klein'));
+}
+function twLetzteZeigen() {   // vierter Filter auf der Seite Tageswertung: die Sieger der letzten Auswertung in derselben Tabelle
+  const mk = (tag, txt, cls) => { const x = document.createElement(tag); x.textContent = txt; if (cls) x.className = cls; return x; };
+  const l = R.tw && R.tw.letzte, sieger = l ? l.sieger : [];
+  $('#teams').classList.add('hide');
+  document.querySelectorAll('#rtabs button').forEach(bt => bt.classList.toggle('an', bt.dataset.f === F));
+  $('#rl').classList.add('ohnerunden'); $('#rl').classList.remove('rek'); $('#rl thead th:nth-child(4)').textContent = t('cPunkte');
+  const zeilen = sieger.map(x => {
+    const sp = R.top.find(y => y.name === x.n), tr = mk('tr', '', (sp ? sp.team : '') + (sp && sp.ich ? ' ich2' : ''));   // Teamfarbe und Hervorhebung über den Namen
+    tr.append(mk('td', x.pl), mk('td', x.n), mk('td', ''), mk('td', x.tp));
+    return tr;
+  });
+  if (!zeilen.length) { const tr = mk('tr', ''), td = mk('td', t('twKeine')); td.colSpan = 4; tr.append(td); zeilen.push(tr); }
+  $('#rlb').replaceChildren(...zeilen);
+  $('#rlwrap').classList.toggle('scroll', zeilen.length > 15);
+  $('#platz').textContent = '';
+  const e = $('#twinfo'); e.replaceChildren();
+  if (l) e.append(el('p', t('twLetzte', datum(l.tag)) + ': ' + t('twBel', l.p, l.w), 'klein'));
+  if (l && l.vorl) e.append(el('p', t('twVorl'), 'klein'));   // vorläufig: Belohnung und endgültige Auswertung folgen
 }
 function tsZeigen(liste) {   // Popup nach dem Anmelden: Tagessieg mit Belohnung
   const alt = $('#gov'); if (alt) alt.remove();
@@ -796,7 +817,61 @@ function tsZeigen(liste) {   // Popup nach dem Anmelden: Tagessieg mit Belohnung
     }, '#tsm').finally(() => { if (b.isConnected) { b.disabled = false; b.classList.remove('laden'); } });
   };
 }
+function tzZeigen(liste) {   // Popup nach dem Anmelden: Team-Tagesziel erreicht, mit Belohnung
+  const alt = $('#gov'); if (alt) alt.remove();
+  const o = el('div', '', 'overlay'), k = el('div', '', 'karte'), ico = el('div', '', 'gicon'), b = el('button', t('verstanden')), m = el('p', '', 'meld');
+  let p = 0, w = 0; liste.forEach(x => { p += x.bp; w += x.bw; });
+  o.id = 'gov'; m.id = 'tzm'; m.setAttribute('role', 'alert'); ico.innerHTML = SYM.TROPHY; ico.querySelector('svg').style.color = 'var(--neon)';
+  k.append(ico, el('p', t('tzSieg'), 'gtext'));
+  liste.forEach(x => k.append(el('p', t('tzPopup', t(x.tm), x.st, datum(x.t), x.pc), 'klein')));
+  k.append(el('p', t('twBel', p, w), 'gtext'), m, b); o.append(k); document.body.append(o);
+  b.onclick = () => {
+    if (b.disabled) return;
+    b.disabled = true; b.classList.add('laden');
+    return los(async () => {
+      const j = await api({aktion: 'tzok', name: S.name, token: S.token});
+      o.remove(); S = j.spieler; R = j.rang; zeige(); belohnung(p, w);
+    }, '#tzm').finally(() => { if (b.isConnected) { b.disabled = false; b.classList.remove('laden'); } });
+  };
+}
+let TZ_INFO = false;   // Erklärung zum Team-Tagesziel (Info-Symbol) ist geöffnet
+function tzZeichnen() {   // Team-Tagesziel auf der Seite Tageswertung: eine kompakte Zeile je Team (kurzer Balken mit Stufen-Markierungen, Status daneben); die Erklärung steckt hinter dem Info-Symbol
+  const e = $('#tziel'), Z = R && R.tz;
+  if (!Z || !Z.aktiv || TAB !== 'twseite') { e.replaceChildren(); e.classList.add('hide'); return; }   // nur auf der Seite Tageswertung
+  e.classList.remove('hide');
+  const ich = R.top.find(x => x.ich), mein = ich ? ich.wt : 0, n = Z.stufen.length;
+  const kopf = el('div', '', 'tzk'), tit = el('span', '', 'tzt'), info = el('button', '', 'tzi');
+  info.type = 'button'; info.innerHTML = HICON.INFO; info.setAttribute('aria-label', t('tzInfo')); info.title = t('tzInfo');
+  tit.append(el('b', t('tzT')), info);
+  kopf.append(tit, el('span', mein >= Z.min ? t('tzDabei') : t('tzFehlt', Z.min - mein)));
+  const pop = el('div', t('tzHinw', Z.min, Z.spieler, Z.stufen.map(x => t('tzSt', x.a, x.p, x.w)).join(' · ')), 'tzpop' + (TZ_INFO ? '' : ' hide'));
+  info.onclick = () => { TZ_INFO = !TZ_INFO; pop.classList.toggle('hide', !TZ_INFO); };
+  const zeilen = ['rot', 'blau'].map(tm => {
+    const x = Z[tm], wenig = x.bet < Z.spieler, r = el('div', '', 'tzr ' + tm + (wenig ? ' wenig' : '')), bar = el('div', '', 'tzb'), f = el('i', '');
+    f.style.width = Math.min(100, x.pct) + '%'; bar.append(f);
+    Z.stufen.forEach((st, i) => { const u = el('u', '', !wenig && i < x.stufe ? 'ok' : '');   // Marke leuchtet nur, wenn die Stufe wirklich erreicht ist (Mindestzahl und Anteil)
+      u.style.left = st.a + '%'; bar.append(u); });
+    let txt;   // Status: was fehlt als Nächstes (Mindestzahl oder nächste Stufe)
+    if (wenig) txt = t('tzWenig', x.bet, x.pool, Z.spieler - x.bet, Z.spieler);
+    else {
+      const teile = [t('tzTeam', x.bet, x.pool)];
+      if (x.stufe >= n) teile.push(t('tzStufe', x.stufe, n) + ' ✓');
+      else { if (x.stufe) teile.push(t('tzStufe', x.stufe, n)); teile.push(t('tzBis', Math.max(1, Math.ceil(Z.stufen[x.stufe].a * x.pool / 100) - x.bet), x.stufe + 1)); }
+      txt = teile.join(' · ');
+    }
+    r.append(el('b', t(tm)), bar, el('span', txt));
+    return r;
+  });
+  const gitter = el('div', '', 'tzg'); gitter.append(...zeilen);   // gemeinsames Gitter: Namen, Balken und Status stehen in einer Spalte untereinander, die Balken sind gleich lang und vergleichbar
+  e.replaceChildren(kopf, gitter, pop);
+}
+document.addEventListener('pointerdown', e => { if (TZ_INFO && !e.target.closest('#tziel .tzi, #tziel .tzpop')) { TZ_INFO = false; const p = $('#tziel .tzpop'); if (p) p.classList.add('hide'); } });   // Klick daneben schließt die Erklärung
 function rangZeige() {
+  tzZeichnen();
+  const l0 = R.tw && R.tw.letzte; $('#rtl').textContent = t('twLetzteTab', l0 ? datum(l0.tag) : '–');
+  if (F === 'l' && TAB !== 'twseite') F = '';
+  if (F === 'l') return twLetzteZeigen();
+  $('#teams').classList.remove('hide');
   const mk = (tag, txt, cls) => { const e = document.createElement(tag); e.textContent = txt; if (cls) e.className = cls; return e; };
   const voll = ART === 'alle' && Z === 'g', ich2 = x => !!x.ich, rv = rekV(), rkw = x => (x.rk && x.rk[rv]) || 0, bessere = (a, b) => REKORD[rv] < 0 ? a < b : a > b;
   $('#rsch').textContent = t(rv ? 'schnittB' : 'schnitt') + (voll && !rv && R.akt !== undefined ? ' ' + t('aktivAb', R.akt) : '');   // in der Gesamtwertung zeigt der Server das aktuelle Aktiv-Limit
@@ -826,9 +901,9 @@ function rangZeige() {
   }));
   document.querySelectorAll('#rtabs button').forEach(b => b.classList.toggle('an', b.dataset.f === F));
   $('#rl').classList.toggle('ohnerunden', !voll); $('#rl').classList.toggle('rek', !!rv); $('#rl thead th:nth-child(4)').textContent = t(rv ? 'cBest' : 'cPunkte');   // Runden gibt es nur in der Gesamtwertung aller Punkte
-  const liste = R.top.filter(x => (!F || x.team === F) && (rv ? rkw(x) > 0 : (voll || wert(x) > 0))).sort(rv ? (x, y) => (bessere(rkw(x), rkw(y)) ? -1 : bessere(rkw(y), rkw(x)) ? 1 : 0) || y.punkte - x.punkte : (x, y) => wert(y) - wert(x) || y.punkte - x.punkte);
+  const liste = R.top.filter(x => (!F || x.team === F) && (rv ? rkw(x) > 0 : (voll || ART === 'tw' || wert(x) > 0))).sort(rv ? (x, y) => (bessere(rkw(x), rkw(y)) ? -1 : bessere(rkw(y), rkw(x)) ? 1 : 0) || y.punkte - x.punkte : (x, y) => wert(y) - wert(x) || y.punkte - x.punkte);
   const zeilen = liste.map((x, i) => {
-    const tr = mk('tr', '', x.team + (ich2(x) ? ' ich2' : ''));
+    const tr = mk('tr', '', x.team + (ich2(x) ? ' ich2' : '') + (ART === 'tw' && !wert(x) ? ' null' : ''));   // Tageswertung: auch Spieler ohne Punkte, gedämpft dargestellt
     tr.append(mk('td', i + 1), mk('td', x.name), mk('td', x.runden), mk('td', rv ? rohText(rv, rkw(x)) : wert(x)));
     return tr;
   });
@@ -837,7 +912,7 @@ function rangZeige() {
   $('#rlwrap').classList.toggle('scroll', liste.length > 15);   // ab 16 Einträgen scrollt die Tabelle
   const ich = liste.findIndex(ich2);  // Platz im gewählten Filter
   const zfest = ART === 'tw' || !!rv; $('#rzseg').classList.toggle('aus', zfest); document.querySelectorAll('#rzseg button').forEach(b => b.classList.toggle('an', b.dataset.z === (rv ? 'g' : Z))); rangTitel(); twZeigen();
-  if (TAB === 'rangseite') { if (ART === 'tw') eiMelden('ent_tw'); else if (rv) eiMelden('ent_best'); }
+  if (TAB === 'rangseite' || TAB === 'twseite') { if (ART === 'tw') eiMelden('ent_tw'); else if (rv) eiMelden('ent_best'); }
   $('#platz').textContent = ich < 0 ? '' : F ? t('platzTeam', t(F), ich + 1, liste.length) : t(voll ? 'platz' : 'platzSel', ich + 1, liste.length);
 }
 let API_N = 0;   // laufende Spiel-Anfragen: der Chat fragt nur, wenn gerade keine läuft
@@ -875,7 +950,7 @@ async function apiRoh(a) {   // mit Wiederholungen: jede Anfrage trägt eine rid
       setTimeout(diagSenden, 0);
       return j;
     } catch (e) {
-      if (!istNetz(e)) throw e;
+      if (!istNetz(e) && e.message !== 'E_BUSY') throw e;   // E_BUSY = Server ausgelastet, die Anfrage wurde nicht ausgeführt: gefahrlos wiederholen
       letzter = e; diagMerken(a, v, e, Date.now() - t0);
     } finally { clearTimeout(tm); }
   }
@@ -1121,7 +1196,7 @@ function chatMarker() { $('#cmark').classList.toggle('hide', !(S && CH.max > CH.
 function chatPlan() {   // nächste Abfrage einplanen
   clearTimeout(CHAT_T); CHAT_T = 0;
   if (!S) return;
-  CHAT_T = setTimeout(chatTick, TAB === 'chat' ? CHAT_INTERVALL_OFFEN_MS : CHAT_INTERVALL_MS);
+  CHAT_T = setTimeout(chatTick, (TAB === 'chat' ? CHAT_INTERVALL_OFFEN_MS : CHAT_INTERVALL_MS) * (0.8 + Math.random() * 0.4));   // leicht streuen, damit nicht alle Geräte gleichzeitig fragen
 }
 async function chatTick() {
   if (!S) return;
@@ -1306,7 +1381,7 @@ async function doppelAbschluss(dw, gezeigt) {   // Wahl senden; der Hauptwürfel
     const anim = dw[k] !== gezeigt ? (async () => { rolleStart(); await rolleStopp(dw[k], true); await sleep(T_AUSLAUF + T_WURF_NACH); })() : Promise.resolve();
     gezeigt = dw[k];
     try { const j = await api({aktion: 'doppelwahl', name: S.name, token: S.token, wahl: k}); await anim; return j; }
-    catch (e) { await anim; if (!istNetz(e)) throw e; $('#log').textContent = t('E_NET'); }
+    catch (e) { await anim; if (!istNetz(e) && e.message !== 'E_BUSY') throw e; $('#log').textContent = t(istNetz(e) ? 'E_NET' : 'E_BUSY'); }
   }
 }
 function zugFertig(j) {   // nach dem Ziehen: Stand übernehmen, Belohnungen und Meldungen zeigen
@@ -1356,7 +1431,7 @@ $('#nav').onclick = e => {
   if (!b) return;
   tab(b.dataset.tab);
   if (b.dataset.tab === 'admin' && APW) los(() => adminCall({}), '#afehler');   // beim Öffnen des Admin-Bereichs automatisch aktualisieren
-  if (b.dataset.tab === 'rangseite' && S)  // Rangliste beim Öffnen frisch laden
+  if ((b.dataset.tab === 'rangseite' || b.dataset.tab === 'twseite') && S)  // Rangliste beim Öffnen frisch laden
     api({aktion: 'me', name: S.name, token: S.token}).then(j => { R = j.rang; rangZeige(); }).catch(() => {});
 };
 $('#aok').onclick = () => los(async () => {
@@ -1642,7 +1717,7 @@ document.addEventListener('focusout', () => setTimeout(() => window.scrollTo(0, 
   const de = document.documentElement, b = $('#vollb'), req = de.requestFullscreen || de.webkitRequestFullscreen, aus = document.exitFullscreen || document.webkitExitFullscreen;
   const an = () => !!(document.fullscreenElement || document.webkitFullscreenElement), app = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
   if (b && req && !app) {
-    const sym = () => { b.innerHTML = ic('<path ' + LN + ' d="' + (an() ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5') + '"/>'); };
+    const sym = () => { b.innerHTML = ic('<path ' + LN + ' d="' + (an() ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5') + '"/>') + '<span data-i="vollbild">' + t('vollbild') + '</span>'; };
     b.classList.remove('hide'); sym();
     b.onclick = () => { try { const p = an() ? aus.call(document) : req.call(de); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
     ['fullscreenchange', 'webkitfullscreenchange'].forEach(n => document.addEventListener(n, () => { sym(); setTimeout(() => { CAM.ox = null; layoutSpiel(); }, 300); }));
@@ -1652,7 +1727,8 @@ document.addEventListener('focusout', () => setTimeout(() => window.scrollTo(0, 
 // ---- Seite exakt an den sichtbaren Bereich binden (iOS verschiebt bei Tastatur, Zoom und Safari-Leisten den sichtbaren Ausschnitt, dann rutschte die Seite unter die Leisten) ----
 if (window.visualViewport) {
   const vv = window.visualViewport, st = document.body.style; let raf = 0;
-  const pass = () => { raf = 0; st.top = vv.offsetTop + 'px'; st.left = vv.offsetLeft + 'px'; st.right = 'auto'; st.bottom = 'auto'; st.width = vv.width + 'px'; st.height = vv.height + 'px'; };
+  const pass = () => { raf = 0; st.top = vv.offsetTop + 'px'; st.left = vv.offsetLeft + 'px'; st.right = 'auto'; st.bottom = 'auto'; st.width = vv.width + 'px'; st.height = vv.height + 'px';
+    const rs = document.documentElement.style; rs.setProperty('--vvt', vv.offsetTop + 'px'); rs.setProperty('--vvl', vv.offsetLeft + 'px'); rs.setProperty('--vvw', vv.width + 'px'); rs.setProperty('--vvh', vv.height + 'px'); };   // die Overlays (Quiz, Dialoge) folgen dem sichtbaren Bereich: bei geöffneter Tastatur werden sie darüber zentriert
   const plan = () => { if (!raf) raf = requestAnimationFrame(pass); };
   vv.addEventListener('resize', plan); vv.addEventListener('scroll', plan); window.addEventListener('orientationchange', () => setTimeout(plan, 300)); plan();
 }
@@ -1661,3 +1737,17 @@ window.addEventListener('scroll', () => { if (window.scrollX || window.scrollY) 
 // ---- Konto: zwei Reiter (Profil = Anzeigename und Spielzugehörigkeit, Sicherheit = Passwort und Wiederherstellungscode) ----
 function einstTab(n) { document.querySelectorAll('#etabs button').forEach(b => b.classList.toggle('an', b.dataset.et === n)); ['profil', 'sicher'].forEach(k => $('#e' + k).classList.toggle('hide', k !== n)); }
 $('#etabs').onclick = e => { const b = e.target.closest('button'); if (b) einstTab(b.dataset.et); };
+
+// ---- Hamburger-Menü rechts in der Kopfzeile: Sprache, Vollbild, Konto, Abmelden ----
+{
+  const mb = $('#menub'), mp = $('#menup');
+  const zu = () => { mp.classList.add('hide'); mb.setAttribute('aria-expanded', 'false'); };
+  mb.onclick = () => { const auf = mp.classList.contains('hide'); mp.classList.toggle('hide', !auf); mb.setAttribute('aria-expanded', String(auf)); };
+  mp.addEventListener('click', e => { if (e.target.closest('button')) zu(); });   // jeder Eintrag schließt das Menü
+  mp.addEventListener('change', zu);   // Sprache gewählt
+  document.addEventListener('pointerdown', e => { if (!mp.classList.contains('hide') && !mp.contains(e.target) && !mb.contains(e.target)) zu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') zu(); });
+}
+
+// ---- Eingabefelder in Overlays (z. B. Quizantwort): beim Fokussieren in den sichtbaren Bereich scrollen, wenn die Tastatur aufgeht ----
+document.addEventListener('focusin', e => { const x = e.target; if (x && x.matches && x.matches('.overlay input, .overlay textarea, .overlay select')) setTimeout(() => { try { x.scrollIntoView({block: 'nearest', behavior: 'smooth'}); } catch (y) {} }, 350); });

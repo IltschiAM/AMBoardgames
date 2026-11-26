@@ -741,3 +741,84 @@ button.mbtn:disabled{opacity:.5}
 body[data-tab="einst"] main{padding-top:0}
 #ekopf #elogin{margin:0 0 6px}
 #ekopf #etabs{margin:0}
+
+/* Desktop (Maus): schmale Scrollbalken im dunklen Design statt der hellen Standard-Balken; Touch-Geräte (iPad, iPhone, Android) behalten ihr gewohntes Verhalten */
+@media (hover:hover) and (pointer:fine){
+  *{scrollbar-width:thin;scrollbar-color:rgba(47,212,184,.5) transparent}
+}
+
+/* Team-Tagesziel in der Rangliste */
+#tziel{margin:6px 0 0;padding:8px 12px;background:rgba(15,23,36,.7);border:1.5px solid var(--line);border-radius:14px}
+#tziel.hide{display:none}
+#tziel .tzk{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 10px}
+#tziel .tzk b{font:italic 800 1.15rem 'Barlow Condensed',Impact,sans-serif;color:var(--neon)}
+#tziel .tzk span{font-size:.85rem;color:var(--muted)}
+#tziel .tzr{display:grid;grid-template-columns:4.6em 1fr;column-gap:10px;align-items:center;margin:5px 0 0}
+#tziel .tzr b{color:var(--tc)}
+#tziel .tzr span{grid-column:2;font-size:.82rem;color:var(--muted)}
+#tziel .tzb{position:relative;height:10px;border-radius:5px;background:#1a2535}
+#tziel .tzb i{display:block;height:100%;border-radius:5px;background:var(--tc);transition:width .4s}
+#tziel .tzb u{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:rgba(255,255,255,.4);text-decoration:none}
+#tziel .tzb u.ok{background:var(--gold);box-shadow:0 0 5px var(--gold)}
+#tziel p.klein{margin:6px 0 0}
+
+/* Seite Tageswertung (nutzt #rangseite im Modus twmodus): Teamziel oben, Auswahl und Zeitraum der Rangliste ausgeblendet */
+body[data-tab="twseite"] main{display:flex;flex-direction:column;padding-bottom:6px}
+body[data-tab="twseite"] #fehler:empty{display:none}
+#rangseite.twmodus #rkopfz,#rangseite.twmodus #rsch{display:none}
+#tziel{margin:0 0 8px}
+
+/* Hamburger-Menü in der Kopfzeile (Sprache, Vollbild, Konto, Abmelden) */
+#menub{display:grid;place-items:center;padding:5px 9px}
+#menub svg{width:1.4em;height:1.4em;display:block}
+#menub[aria-expanded="true"]{background:var(--neon);color:#04202a}
+#menup{position:absolute;right:12px;top:calc(100% + 6px);z-index:45;display:flex;flex-direction:column;gap:2px;min-width:210px;padding:6px;background:rgba(8,14,22,.98);border:1.5px solid var(--neon);border-radius:12px;box-shadow:0 0 22px rgba(0,0,0,.7)}
+#menup.hide{display:none}
+#menup label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 12px;color:var(--muted);font-size:.95rem}
+#menup select{width:auto;padding:5px 10px}
+#menup button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;font-size:1rem;text-align:left;background:transparent;border:0;border-radius:8px}
+#menup button:active{background:rgba(255,255,255,.08)}
+
+/* Team-Tagesziel kompakt: eine Zeile je Team (Name, kurzer Balken, Status daneben); Erklärung hinter dem Info-Symbol */
+#tziel{position:relative;padding:6px 10px;margin:0 0 6px}
+#tziel .tzk{gap:0 10px;align-items:center}
+#tziel .tzt{display:inline-flex;align-items:center;gap:4px}
+#tziel .tzi{width:26px;height:26px;margin:0;padding:0;display:grid;place-items:center;border-radius:50%;background:transparent;color:var(--neon);border:0;box-shadow:none}
+#tziel .tzi svg{width:20px;height:20px;display:block}
+#tziel .tzr{grid-template-columns:3.4em minmax(60px,34%) 1fr;column-gap:8px;margin:3px 0 0}
+#tziel .tzr span{grid-column:auto;font-size:.8rem;line-height:1.2}
+#tziel .tzpop{position:absolute;left:6px;right:6px;top:34px;z-index:15;padding:8px 12px;background:rgba(8,14,22,.98);border:1.5px solid var(--neon);border-radius:12px;box-shadow:0 0 22px rgba(0,0,0,.7);font-size:.88rem;font-weight:600;color:var(--text)}
+#tziel .tzpop.hide{display:none}
+
+/* Team-Tagesziel: schwimmendes Layout, Name links, Status rechts am Rand, der Balken füllt die Mitte */
+#tziel .tzg{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;column-gap:10px;row-gap:5px;align-items:center;margin-top:4px}
+#tziel .tzr{display:contents}
+#tziel .tzr b{white-space:nowrap}
+#tziel .tzr span{white-space:nowrap;text-align:right}
+@media (max-width:480px){#tziel .tzr span{white-space:normal}}
+
+/* Seite Tageswertung: vierter Filter "Letzte" nur dort, Teamkästen ausblendbar */
+#teams.hide{display:none}
+#rangseite:not(.twmodus) #rtl{display:none}
+
+/* Seite Tageswertung: kompaktere Zeilen und Abstände, damit mindestens 10 Spieler ohne Scrollen sichtbar sind (die Tabelle nutzt die verbleibende Bildschirmhöhe, bei Platzmangel scrollt sie selbst) */
+#rangseite.twmodus #rl td{padding:4px 8px}
+#rangseite.twmodus #rl th{padding:5px 8px}
+#rangseite.twmodus #teams div{padding:5px 14px}
+#rangseite.twmodus #teams strong{font-size:1.7rem}
+#rangseite.twmodus #rtabs{margin:6px 0 0}
+#rangseite.twmodus #rtabs button{padding:5px 10px}
+#rangseite.twmodus #rlwrap{margin:6px 0 0}
+#rangseite.twmodus #platz{margin:4px 0 0;min-height:0;font-size:.95rem}
+#rangseite.twmodus #twinfo .klein{font-size:.8rem;line-height:1.25;margin:2px 0 0}
+
+/* Team-Tagesziel: solange die Mindestzahl an Beteiligten fehlt, ist der Balken abgedunkelt und die Stufenmarken sind grau */
+#tziel .tzr.wenig .tzb i{opacity:.4}
+#tziel .tzr.wenig .tzb u{background:rgba(255,255,255,.18)}
+
+/* Tageswertung: Spieler ohne Punkte stehen am Ende der Liste, gedämpft */
+#rl tr.null td{opacity:.55}
+#rl tr.null.ich2 td{opacity:1}
+
+/* Overlays folgen dem sichtbaren Bereich (Variablen setzt spiel.js aus visualViewport): bei geöffneter Bildschirmtastatur bleibt der Dialog darüber sichtbar */
+.overlay{inset:auto;top:var(--vvt,0px);left:var(--vvl,0px);width:var(--vvw,100%);height:var(--vvh,100%)}
